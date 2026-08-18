@@ -1,0 +1,2123 @@
+[
+  {
+    "trial_id": 1,
+    "cold_or_warm": "cold",
+    "total_wall_time": 999.8004853725433,
+    "total_planning_latency": 996.0442786216736,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": false,
+    "final_executable_plan": [
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "action": "Drop 'Name' and 'Ticket' columns",
+        "reasoning": "These columns are high-risk as per dataset context and contain non-numeric information that cannot be used in classification."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Ticket"
+        },
+        "action": "Drop 'Name' and 'Ticket' columns",
+        "reasoning": "These columns are high-risk as per dataset context and contain non-numeric information that cannot be used in classification."
+      },
+      {
+        "tool_name": "encode_categorical_features",
+        "arguments": {
+          "columns": [
+            "Sex",
+            "Embarked"
+          ]
+        },
+        "action": "Encode categorical features",
+        "reasoning": "The dataset has categorical columns 'Sex' and 'Embarked' that need one-hot encoding for the classification model."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in 'Age' column",
+        "reasoning": "The 'Age' column has missing values (19.87% missing) and needs imputation using median to handle missing data."
+      },
+      {
+        "tool_name": "scale_features",
+        "arguments": {
+          "columns": [
+            "Age",
+            "Fare"
+          ]
+        },
+        "action": "Scale numeric features",
+        "reasoning": "Numerical features like 'Age' and 'Fare' should be scaled to improve model performance in classification tasks."
+      }
+    ],
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked",
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": true,
+    "model_comparison_completed": true,
+    "final_report_generated": true,
+    "failure_category": "ADEQUACY_FAILURE",
+    "failure_reason": "missing_values (material): Embarked; missing_values (material): Embarked",
+    "winner_model": "model_24244776",
+    "winner_algorithm": "random_forest selected: F1=0.7353 vs. 0.697 for logistic_regression.",
+    "qualitative_checks": {
+      "plan_steps_count": 5,
+      "age_addressed": true,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": true,
+      "numeric_scaling_valid": true
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 369.63383436203003,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop high-risk columns to reduce complexity and potential injection vectors",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' column is listed in high_risk_columns (from dataset context), which indicates potential security or injection risks. Dropping it aligns with security best practices and reduces feature complexity."
+          },
+          {
+            "action": "Drop high-risk columns to reduce complexity and potential injection vectors",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The 'Ticket' column is also listed in high_risk_columns (from dataset context), which indicates potential security or injection risks. Dropping it aligns with security best practices and reduces feature complexity."
+          },
+          {
+            "action": "Impute missing values in 'Age' column using median strategy",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values (from dataset context), so imputation is necessary. Using median is robust for skewed distributions and avoids bias from outliers."
+          },
+          {
+            "action": "Encode categorical features 'Sex' and 'Embarked' using one-hot encoding",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with low unique percentages (0.22 and 0.34 respectively) and missing values (0.22% for Embarked). One-hot encoding converts them into numeric features suitable for classification."
+          },
+          {
+            "action": "Scale numeric features 'Age' and 'Fare' using standard scaling",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "After imputation, 'Age' and 'Fare' are numeric features with potential variance differences. Standard scaling ensures they contribute equally to the model, which is crucial for accurate prediction."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 250.5752308368683,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop 'Cabin' column due to high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "The 'Cabin' column has 77.1% missing values and is not handled in the current plan, which would cause it to be silently excluded by train_model(). However, explicitly dropping it ensures no unintended issues with the training matrix."
+          },
+          {
+            "action": "Impute missing values in 'Embarked' using mode",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Embarked",
+              "strategy": "mode"
+            },
+            "reasoning": "The 'Embarked' column has 0.22% missing values but is currently used in the encoding step, which would cause missing values to reach the training matrix. Imputing with mode ensures clean data for the model without introducing NaNs."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 375.83521342277527,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop 'Name' and 'Ticket' columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "These columns are high-risk as per dataset context and contain non-numeric information that cannot be used in classification."
+          },
+          {
+            "action": "Drop 'Name' and 'Ticket' columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "These columns are high-risk as per dataset context and contain non-numeric information that cannot be used in classification."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The dataset has categorical columns 'Sex' and 'Embarked' that need one-hot encoding for the classification model."
+          },
+          {
+            "action": "Impute missing values in 'Age' column",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has missing values (19.87% missing) and needs imputation using median to handle missing data."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "Numerical features like 'Age' and 'Fare' should be scaled to improve model performance in classification tasks."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      }
+    ]
+  },
+  {
+    "trial_id": 2,
+    "cold_or_warm": "warm",
+    "total_wall_time": 532.2470669746399,
+    "total_planning_latency": 530.5868408679962,
+    "attempt_count": 2,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": true,
+    "final_executable_plan": [
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Cabin"
+        },
+        "action": "Drop column with high missing values",
+        "reasoning": "Cabin has 77.1% missing values and is not handled by the current plan, which could lead to silent exclusion or crashes during training. Dropping it ensures clean data without silent handling."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Embarked",
+          "strategy": "mode"
+        },
+        "action": "Impute missing values for Embarked",
+        "reasoning": "Embarked has 0.22% missing values, but as a categorical feature, imputing with mode ensures it doesn't cause errors in training (LogisticRegression fails on NaNs, RandomForest is sensitive to NaNs in scaled features)."
+      },
+      {
+        "tool_name": "encode_categorical_features",
+        "arguments": {
+          "columns": [
+            "Sex",
+            "Embarked"
+          ]
+        },
+        "action": "Encode categorical features",
+        "reasoning": "Embarked was previously handled by the encode step but had missing values that weren't imputed. Now imputed, it's safe to encode without risking NaNs in the training matrix."
+      },
+      {
+        "tool_name": "scale_features",
+        "arguments": {
+          "columns": [
+            "Age",
+            "Fare"
+          ]
+        },
+        "action": "Scale numeric features",
+        "reasoning": "Age and Fare are already being scaled in the current plan, so this step remains unchanged to ensure consistent scaling."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "action": "Drop column with high missing values",
+        "reasoning": "Name was already dropped in the previous plan and remains valid for cleanup."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Ticket"
+        },
+        "action": "Drop column with high missing values",
+        "reasoning": "Ticket was already dropped in the previous plan and remains valid for cleanup."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values for Age",
+        "reasoning": "Age was already imputed with median in the previous plan, so this step remains unchanged to ensure consistent handling."
+      }
+    ],
+    "completed_successfully": true,
+    "replan_count": 1,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": true,
+    "model_comparison_completed": true,
+    "final_report_generated": true,
+    "failure_category": null,
+    "failure_reason": null,
+    "winner_model": "model_4bf3df0d",
+    "winner_algorithm": "random_forest selected: F1=0.7353 vs. 0.697 for logistic_regression.",
+    "qualitative_checks": {
+      "plan_steps_count": 7,
+      "age_addressed": true,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": true,
+      "numeric_scaling_valid": true
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 319.9135203361511,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The dataset context identifies 'Name' and 'Ticket' as high-risk columns (high_risk_columns: ['Name', 'Ticket']). Dropping these reduces noise and aligns with security best practices for classification tasks."
+          },
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The dataset context identifies 'Ticket' as a high-risk column (high_risk_columns: ['Name', 'Ticket']). Dropping this column further reduces potential security risks and irrelevant features for prediction."
+          },
+          {
+            "action": "Impute missing values in Age",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values (missing_percentage: 19.87). Using median imputation is robust for skewed distributions and aligns with the dataset's numeric nature."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The 'Sex' and 'Embarked' columns are categorical with low unique percentages (0.22 and 0.34 respectively). One-hot encoding these features will create binary features for the classifier without introducing bias."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "The 'Age' and 'Fare' columns are numeric with non-uniform distributions (mean and std vary significantly). Standard scaling improves model convergence and performance for classification tasks."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 210.6733205318451,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop column with high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "Cabin has 77.1% missing values and is not handled by the current plan, which could lead to silent exclusion or crashes during training. Dropping it ensures clean data without silent handling."
+          },
+          {
+            "action": "Impute missing values for Embarked",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Embarked",
+              "strategy": "mode"
+            },
+            "reasoning": "Embarked has 0.22% missing values, but as a categorical feature, imputing with mode ensures it doesn't cause errors in training (LogisticRegression fails on NaNs, RandomForest is sensitive to NaNs in scaled features)."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Embarked was previously handled by the encode step but had missing values that weren't imputed. Now imputed, it's safe to encode without risking NaNs in the training matrix."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "Age and Fare are already being scaled in the current plan, so this step remains unchanged to ensure consistent scaling."
+          },
+          {
+            "action": "Drop column with high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "Name was already dropped in the previous plan and remains valid for cleanup."
+          },
+          {
+            "action": "Drop column with high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "Ticket was already dropped in the previous plan and remains valid for cleanup."
+          },
+          {
+            "action": "Impute missing values for Age",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "Age was already imputed with median in the previous plan, so this step remains unchanged to ensure consistent handling."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      }
+    ]
+  },
+  {
+    "trial_id": 3,
+    "cold_or_warm": "warm",
+    "total_wall_time": 683.6024687290192,
+    "total_planning_latency": 680.9374213218689,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": false,
+    "final_executable_plan": [
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "action": "Drop columns with high risk of leakage",
+        "reasoning": "The dataset context shows 'Name' and 'Ticket' are high-risk columns (high_risk_columns: ['Name', 'Ticket']). Dropping these prevents potential leakage and aligns with the dataset's security policy."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in 'Age' using median",
+        "reasoning": "The 'Age' column has 19.87% missing values. Imputing with median is statistically robust for this dataset and avoids bias from mean or mode."
+      },
+      {
+        "tool_name": "encode_categorical_features",
+        "arguments": {
+          "columns": [
+            "Sex",
+            "Embarked"
+          ]
+        },
+        "action": "Encode categorical features 'Sex' and 'Embarked'",
+        "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with high uniqueness (0.22 and 0.34 unique percentages) that need one-hot encoding for classification."
+      }
+    ],
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked",
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": true,
+    "model_comparison_completed": true,
+    "final_report_generated": true,
+    "failure_category": "ADEQUACY_FAILURE",
+    "failure_reason": "missing_values (material): Embarked; missing_values (material): Embarked",
+    "winner_model": "model_34173da7",
+    "winner_algorithm": "random_forest selected: F1=0.6923 vs. 0.6923 for logistic_regression.",
+    "qualitative_checks": {
+      "plan_steps_count": 3,
+      "age_addressed": true,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": true,
+      "numeric_scaling_valid": false
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 306.7946491241455,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The dataset has high-risk columns 'Name' and 'Ticket' that could introduce bias or security risks. Dropping these aligns with the high_risk_columns list and reduces feature complexity."
+          },
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The dataset has high-risk columns 'Name' and 'Ticket' that could introduce bias or security risks. Dropping these aligns with the high_risk_columns list and reduces feature complexity."
+          },
+          {
+            "action": "Impute missing values in Age",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values. Using median imputation is robust for skewed distributions and common in titanic datasets."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The 'Sex' and 'Embarked' columns are categorical with low unique percentages and high impact on survival prediction. One-hot encoding converts them to numeric features for ML models."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "The 'Age' and 'Fare' columns have continuous distributions that benefit from standard scaling to improve model convergence and performance."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 97.77291345596313,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop 'Cabin' column due to high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "The failure context indicates 'Cabin' has 77.1% missing values and no plan step addresses it. Dropping this column prevents it from being silently excluded or causing issues in the training matrix."
+          },
+          {
+            "action": "Impute missing values in 'Embarked' using mode strategy",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Embarked",
+              "strategy": "mode"
+            },
+            "reasoning": "The failure context shows 'Embarked' has 0.22% missing values and is currently a training feature. Imputing missing values here ensures it doesn't cause errors in the training matrix, as LogisticRegression raises ValueError on NaN inputs."
+          },
+          {
+            "action": "Add 'Embarked' to encode_categorical_features step",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Embarked"
+              ]
+            },
+            "reasoning": "Since 'Embarked' has missing values and needs imputation, it must be explicitly handled by the encoding step to prevent silent issues in the training pipeline."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 276.36985874176025,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop columns with high risk of leakage",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The dataset context shows 'Name' and 'Ticket' are high-risk columns (high_risk_columns: ['Name', 'Ticket']). Dropping these prevents potential leakage and aligns with the dataset's security policy."
+          },
+          {
+            "action": "Impute missing values in 'Age' using median",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values. Imputing with median is statistically robust for this dataset and avoids bias from mean or mode."
+          },
+          {
+            "action": "Encode categorical features 'Sex' and 'Embarked'",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with high uniqueness (0.22 and 0.34 unique percentages) that need one-hot encoding for classification."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      }
+    ]
+  },
+  {
+    "trial_id": 4,
+    "cold_or_warm": "warm",
+    "total_wall_time": 1187.063018321991,
+    "total_planning_latency": 1185.6851246356964,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": false,
+    "final_adequacy": false,
+    "final_executable_plan": [
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Embarked"
+        },
+        "action": "Drop 'Embarked' column due to missing values and being used as a feature",
+        "reasoning": "The previous plan failed because 'Embarked' has missing values (0.22%) and is used as a training feature in the encode_categorical_features step. Since both LogisticRegression and RandomForestClassifier cannot handle NaN values, dropping this column ensures the data is clean before encoding."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in 'Age' column using median",
+        "reasoning": "This step was already present in the previous plan and remains valid for handling missing values in 'Age' using the median strategy."
+      },
+      {
+        "tool_name": "encode_categorical_features",
+        "arguments": {
+          "columns": [
+            "Sex",
+            "Embarked"
+          ]
+        },
+        "action": "Encode categorical features for 'Sex' and 'Embarked'",
+        "reasoning": "This step was previously included but now includes the fix for 'Embarked' by dropping it first. However, since we dropped 'Embarked' in the new step, this step will only encode 'Sex' (as 'Embarked' is no longer present)."
+      },
+      {
+        "tool_name": "scale_features",
+        "arguments": {
+          "columns": [
+            "Age",
+            "Fare"
+          ]
+        },
+        "action": "Scale numeric features for 'Age' and 'Fare'",
+        "reasoning": "This step was already present in the previous plan and remains valid for scaling numeric features."
+      }
+    ],
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": true,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": true,
+    "model_comparison_completed": true,
+    "final_report_generated": false,
+    "failure_category": "SCHEMA_FAILURE",
+    "failure_reason": "Invalid tool argument structure",
+    "winner_model": "model_da38a1fd",
+    "winner_algorithm": "random_forest selected: F1=0.4091 vs. 0.2526 for logistic_regression.",
+    "qualitative_checks": {
+      "plan_steps_count": 4,
+      "age_addressed": true,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": false,
+      "categorical_encoding_valid": true,
+      "numeric_scaling_valid": true
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 240.33420252799988,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop columns with high risk or high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "Cabin has high missing values (77.1%) and is a high-risk column per dataset context, so it's safe to drop for model training."
+          },
+          {
+            "action": "Impute missing values in Age column",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "Age has missing values (19.87%) and imputing with median is statistically robust for this dataset."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Sex and Embarked are categorical columns that need one-hot encoding for the classification model."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "Age and Fare are numeric features that should be standardized for better model performance."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 253.28040766716003,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop 'Embarked' column due to missing values and being used as a feature",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Embarked"
+            },
+            "reasoning": "The previous plan failed because 'Embarked' has missing values (0.22%) and is used as a training feature in the encode_categorical_features step. Since both LogisticRegression and RandomForestClassifier cannot handle NaN values, dropping this column ensures the data is clean before encoding."
+          },
+          {
+            "action": "Impute missing values in 'Age' column using median",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "This step was already present in the previous plan and remains valid for handling missing values in 'Age' using the median strategy."
+          },
+          {
+            "action": "Encode categorical features for 'Sex' and 'Embarked'",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "This step was previously included but now includes the fix for 'Embarked' by dropping it first. However, since we dropped 'Embarked' in the new step, this step will only encode 'Sex' (as 'Embarked' is no longer present)."
+          },
+          {
+            "action": "Scale numeric features for 'Age' and 'Fare'",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "This step was already present in the previous plan and remains valid for scaling numeric features."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 692.0705144405365,
+        "success": false,
+        "error": "Ollama did not respond within 600.0s.",
+        "raw_steps": null,
+        "structurally_valid": false,
+        "violations": [
+          "Ollama did not respond within 600.0s."
+        ],
+        "adequate": null,
+        "adequacy_findings": []
+      }
+    ]
+  },
+  {
+    "trial_id": 5,
+    "cold_or_warm": "warm",
+    "total_wall_time": 2413.126629114151,
+    "total_planning_latency": 2382.9006440639496,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": false,
+    "first_attempt_adequacy": null,
+    "final_structural_validity": false,
+    "final_adequacy": false,
+    "final_executable_plan": null,
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": true,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [],
+    "training_completed": false,
+    "model_comparison_completed": false,
+    "final_report_generated": false,
+    "failure_category": "SCHEMA_FAILURE",
+    "failure_reason": "Invalid tool argument structure",
+    "winner_model": null,
+    "winner_algorithm": null,
+    "qualitative_checks": {
+      "plan_steps_count": 0,
+      "age_addressed": false,
+      "embarked_addressed": false,
+      "target_survived_untouched": true,
+      "identifiers_handled": false,
+      "categorical_encoding_valid": false,
+      "numeric_scaling_valid": false
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 602.1159029006958,
+        "success": false,
+        "error": "Ollama did not respond within 600.0s.",
+        "raw_steps": null,
+        "structurally_valid": false,
+        "violations": [
+          "Ollama did not respond within 600.0s."
+        ],
+        "adequate": null,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 602.1774771213531,
+        "success": false,
+        "error": "Ollama did not respond within 600.0s.",
+        "raw_steps": null,
+        "structurally_valid": false,
+        "violations": [
+          "Ollama did not respond within 600.0s."
+        ],
+        "adequate": null,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 1178.6072640419006,
+        "success": false,
+        "error": "Ollama did not respond within 600.0s.",
+        "raw_steps": null,
+        "structurally_valid": false,
+        "violations": [
+          "Ollama did not respond within 600.0s."
+        ],
+        "adequate": null,
+        "adequacy_findings": []
+      }
+    ]
+  },
+  {
+    "trial_id": 6,
+    "cold_or_warm": "warm",
+    "total_wall_time": 59682.50877904892,
+    "total_planning_latency": 59679.47650098801,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": true,
+    "final_executable_plan": [
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in Age",
+        "reasoning": "The failure context indicates that 'Age' has missing values (19.87%) and is used as a training feature. Since it's numeric, imputing with median is appropriate to handle missing values without introducing bias."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "action": "Drop column Name",
+        "reasoning": "The advisory finding states that 'Name' is 100% unique and non-numeric, which could be an identifier-like column. Dropping it addresses this advisory finding without impacting the material failure (missing values in Age)."
+      }
+    ],
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked",
+      "missing_values (material): Age"
+    ],
+    "training_completed": false,
+    "model_comparison_completed": false,
+    "final_report_generated": false,
+    "failure_category": "EXECUTION_FAILURE",
+    "failure_reason": "Pipeline execution failed during training/evaluation",
+    "winner_model": null,
+    "winner_algorithm": null,
+    "qualitative_checks": {
+      "plan_steps_count": 2,
+      "age_addressed": true,
+      "embarked_addressed": false,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": false,
+      "numeric_scaling_valid": false
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 1192.0601003170013,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Impute missing values for Age",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values, and imputing with median is appropriate for numeric data to handle missing values without biasing the model."
+          },
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' column is listed in high_risk_columns and contains unique identifiers that are not useful for prediction."
+          },
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The 'Ticket' column is listed in high_risk_columns and is highly correlated with the target but has low unique values, making it less useful for prediction."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The 'Sex' and 'Embarked' columns are categorical and need one-hot encoding to be used as features in a classification model."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "The 'Age' and 'Fare' columns are numeric and require standard scaling to ensure features have similar variances, which is important for model performance."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 507.9721806049347,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Impute missing values in 'Embarked' column",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Embarked",
+              "strategy": "mode"
+            },
+            "reasoning": "The 'Embarked' column has 0.22% missing values, which would cause errors in the training process if not handled. Since it's a categorical feature, using the mode strategy is appropriate to impute missing values without introducing bias."
+          },
+          {
+            "action": "Drop columns 'Cabin' and 'PassengerId'",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "The 'Cabin' column has 77.1% missing values and is not currently being handled by the plan. Dropping it avoids potential issues with high missing values in the training process."
+          },
+          {
+            "action": "Drop column 'PassengerId'",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "PassengerId"
+            },
+            "reasoning": "The 'PassengerId' column is not relevant for predicting survival and is typically dropped in Titanic analysis to focus on meaningful features."
+          },
+          {
+            "action": "Encode categorical features 'Sex' and 'Embarked'",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The 'Sex' and 'Embarked' columns are categorical and need one-hot encoding to be used in the model. This step ensures they are properly formatted for the machine learning algorithm."
+          },
+          {
+            "action": "Scale numeric features 'Age' and 'Fare'",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "Scaling numeric features improves the performance of the model by ensuring features are on a similar scale, which is particularly important for algorithms like Logistic Regression and Random Forest."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Age"
+        ]
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 57979.44422006607,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Impute missing values in Age",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The failure context indicates that 'Age' has missing values (19.87%) and is used as a training feature. Since it's numeric, imputing with median is appropriate to handle missing values without introducing bias."
+          },
+          {
+            "action": "Drop column Name",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The advisory finding states that 'Name' is 100% unique and non-numeric, which could be an identifier-like column. Dropping it addresses this advisory finding without impacting the material failure (missing values in Age)."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      }
+    ]
+  },
+  {
+    "trial_id": 7,
+    "cold_or_warm": "warm",
+    "total_wall_time": 762.1432831287384,
+    "total_planning_latency": 759.7078423500061,
+    "attempt_count": 2,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": true,
+    "final_executable_plan": [
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Embarked"
+        },
+        "action": "Drop column 'Embarked' to handle missing values",
+        "reasoning": "The previous plan failed because 'Embarked' has missing values (0.22%) and was not imputed or dropped. Since it's used as a training feature in encode_categorical_features and scale_features, dropping it resolves the NaN issue for both LogisticRegression and RandomForestClassifier without introducing new data leakage."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in 'Age' using median",
+        "reasoning": "This step was already in the previous plan and is valid for handling 'Age' missing values. It ensures numerical stability for scaling and modeling."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "action": "Drop column 'Name' to reduce dimensionality",
+        "reasoning": "This step was already in the previous plan and is valid for removing non-numeric, high-cardinality columns that don't contribute to predictive modeling."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Cabin"
+        },
+        "action": "Drop column 'Cabin' to remove missing data",
+        "reasoning": "This step was already in the previous plan and is valid for removing columns with high missing rates (e.g., 68% missing) to avoid introducing NaNs into the training pipeline."
+      },
+      {
+        "tool_name": "scale_features",
+        "arguments": {
+          "columns": [
+            "Age",
+            "Fare"
+          ]
+        },
+        "action": "Scale numeric features 'Age' and 'Fare'",
+        "reasoning": "This step was already in the previous plan and is valid for standardizing numeric features to improve model convergence and performance."
+      },
+      {
+        "tool_name": "encode_categorical_features",
+        "arguments": {
+          "columns": [
+            "Sex",
+            "Embarked"
+          ]
+        },
+        "action": "One-hot encode categorical features 'Sex' and 'Embarked'",
+        "reasoning": "This step was previously attempted but failed because 'Embarked' had missing values. By dropping 'Embarked' first, we ensure it has no missing values before encoding, which is critical for both LogisticRegression and RandomForestClassifier to avoid NaN inputs."
+      }
+    ],
+    "completed_successfully": true,
+    "replan_count": 1,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": true,
+    "model_comparison_completed": true,
+    "final_report_generated": true,
+    "failure_category": null,
+    "failure_reason": null,
+    "winner_model": "model_f644442d",
+    "winner_algorithm": "random_forest selected: F1=0.4091 vs. 0.2526 for logistic_regression.",
+    "qualitative_checks": {
+      "plan_steps_count": 6,
+      "age_addressed": true,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": true,
+      "numeric_scaling_valid": true
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 437.6955683231354,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Dropping columns with high risk or low utility",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' column is listed in high_risk_columns and has 100% unique values, making it high risk for model bias and low utility for prediction. Dropping it reduces risk while not affecting the target column 'Survived'."
+          },
+          {
+            "action": "Dropping columns with high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "The 'Cabin' column has 77.1% missing values, which is too high for meaningful model input. Dropping it avoids introducing noise and aligns with best practices for feature selection."
+          },
+          {
+            "action": "Imputing missing values in 'Age' column",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values. Using median imputation is robust for skewed distributions and avoids distorting the mean of the dataset. This ensures the column is usable for modeling."
+          },
+          {
+            "action": "One-hot encoding categorical columns",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The 'Sex' and 'Embarked' columns are categorical and have low unique percentages (22% and 34% respectively). One-hot encoding converts them into numeric features suitable for classification while avoiding bias from ordinal relationships."
+          },
+          {
+            "action": "Scaling numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "The 'Age' and 'Fare' columns are numeric and have high variance. Standard scaling ensures these features contribute equally to the model, which is critical for classification accuracy in the target 'Survived'."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 322.0122740268707,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop column 'Embarked' to handle missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Embarked"
+            },
+            "reasoning": "The previous plan failed because 'Embarked' has missing values (0.22%) and was not imputed or dropped. Since it's used as a training feature in encode_categorical_features and scale_features, dropping it resolves the NaN issue for both LogisticRegression and RandomForestClassifier without introducing new data leakage."
+          },
+          {
+            "action": "Impute missing values in 'Age' using median",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "This step was already in the previous plan and is valid for handling 'Age' missing values. It ensures numerical stability for scaling and modeling."
+          },
+          {
+            "action": "Drop column 'Name' to reduce dimensionality",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "This step was already in the previous plan and is valid for removing non-numeric, high-cardinality columns that don't contribute to predictive modeling."
+          },
+          {
+            "action": "Drop column 'Cabin' to remove missing data",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "This step was already in the previous plan and is valid for removing columns with high missing rates (e.g., 68% missing) to avoid introducing NaNs into the training pipeline."
+          },
+          {
+            "action": "Scale numeric features 'Age' and 'Fare'",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "This step was already in the previous plan and is valid for standardizing numeric features to improve model convergence and performance."
+          },
+          {
+            "action": "One-hot encode categorical features 'Sex' and 'Embarked'",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "This step was previously attempted but failed because 'Embarked' had missing values. By dropping 'Embarked' first, we ensure it has no missing values before encoding, which is critical for both LogisticRegression and RandomForestClassifier to avoid NaN inputs."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      }
+    ]
+  },
+  {
+    "trial_id": 8,
+    "cold_or_warm": "warm",
+    "total_wall_time": 878.0672590732574,
+    "total_planning_latency": 877.1622734069824,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": false,
+    "final_executable_plan": [
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Embarked",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in 'Embarked' using median",
+        "reasoning": "The failure report indicates that 'Embarked' has 0.22% missing values and is not imputed or dropped in the current plan. Since it's a categorical column used in encoding, imputing it with median (a common strategy for categorical data in this context) ensures no NaNs reach the training matrix, avoiding errors in both LogisticRegression and RandomForestClassifier."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Cabin"
+        },
+        "action": "Drop 'Cabin' column",
+        "reasoning": "The failure report states that 'Cabin' has 77.1% missing values and is not handled by the current plan. Dropping it explicitly avoids the risk of silent exclusion by ColumnTransformer(remainder='drop') and ensures the feature space is clean for model training."
+      }
+    ],
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked",
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": false,
+    "model_comparison_completed": false,
+    "final_report_generated": false,
+    "failure_category": "ADEQUACY_FAILURE",
+    "failure_reason": "missing_values (material): Embarked; missing_values (material): Embarked",
+    "winner_model": null,
+    "winner_algorithm": null,
+    "qualitative_checks": {
+      "plan_steps_count": 2,
+      "age_addressed": false,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": false,
+      "numeric_scaling_valid": false
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 314.3318769931793,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Impute missing values in Age column",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values (from dataset context), which needs imputation before modeling to avoid bias in the survival prediction. Using median is appropriate for skewed age distributions."
+          },
+          {
+            "action": "Encode categorical features: Sex and Embarked",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with low unique percentages (0.22 and 0.34 respectively) that need one-hot encoding to be used in classification models. This step ensures numerical representation for the model."
+          },
+          {
+            "action": "Drop high-risk columns: Name and Ticket",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' column is marked as high-risk (from dataset context) and contains high cardinality (100% unique) which is irrelevant for survival prediction. Similarly, 'Ticket' is high-risk with low unique percentage (76.43) but still contains non-numeric, non-essential information for this task."
+          },
+          {
+            "action": "Drop high-risk column: Ticket",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The 'Ticket' column is explicitly listed in high-risk columns (from dataset context) and has high cardinality (76.43 unique percentage) which is not useful for prediction. Dropping it reduces noise and aligns with the dataset's risk assessment."
+          },
+          {
+            "action": "Scale numeric features: Age and Fare",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "After imputation, 'Age' and 'Fare' are numeric columns that benefit from standard scaling to ensure features have similar variances, which is critical for linear models and gradient-boosting algorithms."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 202.67254948616028,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Impute missing values in 'Embarked' using median",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Embarked",
+              "strategy": "median"
+            },
+            "reasoning": "The failure report indicates that 'Embarked' has 0.22% missing values and is not imputed or dropped in the current plan. Since it's a categorical column used in encoding, imputing it with median (a common strategy for categorical data in this context) ensures no NaNs reach the training matrix, avoiding errors in both LogisticRegression and RandomForestClassifier."
+          },
+          {
+            "action": "Drop 'Cabin' column",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "The failure report states that 'Cabin' has 77.1% missing values and is not handled by the current plan. Dropping it explicitly avoids the risk of silent exclusion by ColumnTransformer(remainder='drop') and ensures the feature space is clean for model training."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 360.1578469276428,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop columns with high risk or missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' column is listed in high_risk_columns and has 100% unique values, which is not useful for prediction. Dropping it reduces noise and aligns with the dataset's security policies."
+          },
+          {
+            "action": "Drop columns with high risk or missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The 'Ticket' column is also listed in high_risk_columns and has 76.43% unique values, which is not predictive. Dropping it further cleans the dataset."
+          },
+          {
+            "action": "Impute missing values in 'Age' column",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values, which needs imputation to be usable. Median is robust for age data and avoids skewing the model."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with missing values (0.22% for 'Embarked') and need one-hot encoding to be used in the model."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "Scaling 'Age' and 'Fare' ensures they have similar scales, which is critical for model performance and avoids bias in the prediction."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      }
+    ]
+  },
+  {
+    "trial_id": 9,
+    "cold_or_warm": "warm",
+    "total_wall_time": 903.9710750579834,
+    "total_planning_latency": 900.3866374492645,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": false,
+    "final_executable_plan": [
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "action": "Drop high-risk columns",
+        "reasoning": "The dataset context shows 'Name' and 'Ticket' are high-risk columns (high_risk_columns: ['Name', 'Ticket']). Dropping these avoids potential leakage and aligns with the dataset's security constraints."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Ticket"
+        },
+        "action": "Drop high-risk columns",
+        "reasoning": "The dataset context explicitly lists 'Ticket' as a high-risk column. Dropping it ensures the model does not use potentially sensitive or non-numeric features that could cause leakage."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in 'Age' using median",
+        "reasoning": "The 'Age' column has 19.87% missing values. Using median imputation is appropriate for skewed distributions and avoids bias from mean or mode."
+      },
+      {
+        "tool_name": "encode_categorical_features",
+        "arguments": {
+          "columns": [
+            "Sex",
+            "Embarked"
+          ]
+        },
+        "action": "Encode categorical columns: 'Sex' and 'Embarked'",
+        "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with low unique percentages (0.22 and 0.34 respectively). One-hot encoding them ensures the model can process these features without leakage."
+      },
+      {
+        "tool_name": "scale_features",
+        "arguments": {
+          "columns": [
+            "Age",
+            "Fare"
+          ]
+        },
+        "action": "Scale numeric features: 'Age' and 'Fare'",
+        "reasoning": "Scaling numeric features like 'Age' and 'Fare' standardizes their ranges, which is critical for models like linear regression or SVMs to prevent feature dominance."
+      }
+    ],
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": true,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked",
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": true,
+    "model_comparison_completed": true,
+    "final_report_generated": false,
+    "failure_category": "DUPLICATE_PLAN",
+    "failure_reason": "The newly LLM-proposed plan is executably identical to a previously attempted plan (same tool calls and arguments, ignoring rationale).",
+    "winner_model": "model_dbb3a523",
+    "winner_algorithm": "random_forest selected: F1=0.3061 vs. 0.3061 for logistic_regression.",
+    "qualitative_checks": {
+      "plan_steps_count": 5,
+      "age_addressed": true,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": true,
+      "numeric_scaling_valid": true
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 368.40869903564453,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The dataset context marks 'Name' and 'Ticket' as high-risk columns (high_risk_columns: ['Name', 'Ticket']). Dropping these reduces noise and potential injection risks while keeping the target column 'Survived' intact."
+          },
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The dataset context marks 'Ticket' as a high-risk column (high_risk_columns: ['Name', 'Ticket']). Dropping this column further minimizes unnecessary features and ensures the dataset is clean for classification."
+          },
+          {
+            "action": "Impute missing values in Age",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values (missing_percentage: 19.87). Imputing with median is statistically robust for skewed distributions and aligns with common practice for age data in Titanic datasets."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with low unique percentages (0.22 and 0.34, respectively) and are not numeric. One-hot encoding these features will convert them into numeric representations suitable for classification models."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "After imputation, the numeric features 'Age' and 'Fare' have non-zero means and variances. Scaling these features ensures they contribute equally to the model, especially since 'Fare' has a higher range (0.0 to 512.3292) than 'Age' (0.42 to 80.0)."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 157.23947763442993,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop Cabin column due to high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "Cabin has 77.1% missing values, and the failure context indicates it's not handled by any step, so dropping it resolves the missing values issue without affecting the training matrix."
+          },
+          {
+            "action": "Impute missing values for Embarked",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Embarked",
+              "strategy": "mode"
+            },
+            "reasoning": "Embarked has 0.22% missing values, which is very low, but the failure context specifies it's not imputed or dropped. Using mode imputation ensures missing values are handled without introducing NaNs into the training data."
+          },
+          {
+            "action": "Add step to handle Embarked in encoding",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Embarked"
+              ]
+            },
+            "reasoning": "The failure context shows Embarked is used as a training feature but not handled for missing values. Encoding it as a single column ensures it's properly processed in the pipeline without NaNs."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 374.73846077919006,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The dataset context shows 'Name' and 'Ticket' are high-risk columns (high_risk_columns: ['Name', 'Ticket']). Dropping these avoids potential leakage and aligns with the dataset's security constraints."
+          },
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The dataset context explicitly lists 'Ticket' as a high-risk column. Dropping it ensures the model does not use potentially sensitive or non-numeric features that could cause leakage."
+          },
+          {
+            "action": "Impute missing values in 'Age' using median",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values. Using median imputation is appropriate for skewed distributions and avoids bias from mean or mode."
+          },
+          {
+            "action": "Encode categorical columns: 'Sex' and 'Embarked'",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with low unique percentages (0.22 and 0.34 respectively). One-hot encoding them ensures the model can process these features without leakage."
+          },
+          {
+            "action": "Scale numeric features: 'Age' and 'Fare'",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "Scaling numeric features like 'Age' and 'Fare' standardizes their ranges, which is critical for models like linear regression or SVMs to prevent feature dominance."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      }
+    ]
+  },
+  {
+    "trial_id": 10,
+    "cold_or_warm": "warm",
+    "total_wall_time": 800.6971719264984,
+    "total_planning_latency": 796.3791127204895,
+    "attempt_count": 3,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "final_structural_validity": true,
+    "final_adequacy": false,
+    "final_executable_plan": [
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "action": "Drop 'Name' column",
+        "reasoning": "The 'Name' column is a high-risk column with 100% unique values and is not useful for prediction, so dropping it reduces model complexity and prevents potential leakage."
+      },
+      {
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Ticket"
+        },
+        "action": "Drop 'Ticket' column",
+        "reasoning": "The 'Ticket' column is also a high-risk column with 76.43% unique values and is not useful for prediction, so dropping it further reduces model complexity and prevents potential leakage."
+      },
+      {
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "action": "Impute missing values in 'Age' column using median",
+        "reasoning": "The 'Age' column has 19.87% missing values, and using median imputation is appropriate for this dataset as it's robust to outliers and common for age data."
+      },
+      {
+        "tool_name": "encode_categorical_features",
+        "arguments": {
+          "columns": [
+            "Sex",
+            "Embarked"
+          ]
+        },
+        "action": "Encode categorical features 'Sex' and 'Embarked'",
+        "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with low unique percentages and need one-hot encoding to be used as numerical features for classification."
+      }
+    ],
+    "completed_successfully": false,
+    "replan_count": 2,
+    "duplicate_plan": false,
+    "new_invalidation": false,
+    "budget_exhaustion": false,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout": false,
+    "schema_violation_count": 0,
+    "tool_argument_violations": [],
+    "adequacy_violations": [
+      "missing_values (material): Embarked",
+      "missing_values (material): Embarked"
+    ],
+    "training_completed": true,
+    "model_comparison_completed": true,
+    "final_report_generated": true,
+    "failure_category": "ADEQUACY_FAILURE",
+    "failure_reason": "missing_values (material): Embarked; missing_values (material): Embarked",
+    "winner_model": "model_ecbe9250",
+    "winner_algorithm": "random_forest selected: F1=0.6923 vs. 0.6923 for logistic_regression.",
+    "qualitative_checks": {
+      "plan_steps_count": 4,
+      "age_addressed": true,
+      "embarked_addressed": true,
+      "target_survived_untouched": true,
+      "identifiers_handled": true,
+      "categorical_encoding_valid": true,
+      "numeric_scaling_valid": false
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 362.4965841770172,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop high-risk columns to reduce complexity and potential injection vectors",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' column is marked as high-risk (high_risk_columns: ['Name', 'Ticket']) in the dataset context, and it contains non-numeric data that is not useful for prediction. Dropping it reduces model complexity and aligns with security best practices."
+          },
+          {
+            "action": "Drop high-risk columns to reduce complexity and potential injection vectors",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The 'Ticket' column is also marked as high-risk (high_risk_columns: ['Name', 'Ticket']) in the dataset context. It has high uniqueness (76.43%) and is non-numeric, making it less informative for prediction. Dropping it further reduces model complexity."
+          },
+          {
+            "action": "Handle missing values in the 'Age' column",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values (as per dataset context). Since this is a numeric column and the median is a robust measure for imputation in this context, using median imputation ensures the data remains clean without introducing bias."
+          },
+          {
+            "action": "Encode categorical features for 'Sex' and 'Embarked' columns",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The 'Sex' and 'Embarked' columns are categorical and have low unique percentages (0.22 and 0.34 respectively). Encoding these columns as one-hot features will convert them into numeric form suitable for modeling while maintaining their predictive power."
+          },
+          {
+            "action": "Scale numeric features for 'Age' and 'Fare' columns",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "The 'Age' and 'Fare' columns are numeric and have high variance (e.g., Fare's max is 512.3292). Scaling these features ensures they contribute equally to the model, preventing features with larger magnitudes from dominating the prediction process."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 111.27759623527527,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop column 'Cabin' to handle high missing values",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Cabin"
+            },
+            "reasoning": "The failure analysis shows 'Cabin' has 77.1% missing values and is not addressed in the current plan. Dropping it resolves the silent exclusion issue by ensuring no column with high missing values is left unprocessed."
+          },
+          {
+            "action": "Impute missing values in 'Embarked' using mode",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Embarked",
+              "strategy": "mode"
+            },
+            "reasoning": "The failure analysis indicates 'Embarked' has 0.22% missing values but is included in the encoding step, causing material issues. Imputing with mode (the most frequent value) ensures missing values are handled before encoding, preventing NaNs from entering the training matrix."
+          },
+          {
+            "action": "Re-encode categorical features with 'Embarked' included",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "After imputing 'Embarked', we re-encode it to ensure it's properly handled as a categorical feature without NaNs, maintaining the integrity of the encoding step for both 'Sex' and 'Embarked'."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": true,
+        "adequacy_findings": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 322.604932308197,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop 'Name' column",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' column is a high-risk column with 100% unique values and is not useful for prediction, so dropping it reduces model complexity and prevents potential leakage."
+          },
+          {
+            "action": "Drop 'Ticket' column",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Ticket"
+            },
+            "reasoning": "The 'Ticket' column is also a high-risk column with 76.43% unique values and is not useful for prediction, so dropping it further reduces model complexity and prevents potential leakage."
+          },
+          {
+            "action": "Impute missing values in 'Age' column using median",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has 19.87% missing values, and using median imputation is appropriate for this dataset as it's robust to outliers and common for age data."
+          },
+          {
+            "action": "Encode categorical features 'Sex' and 'Embarked'",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "Both 'Sex' and 'Embarked' are categorical columns with low unique percentages and need one-hot encoding to be used as numerical features for classification."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ]
+      }
+    ]
+  }
+]

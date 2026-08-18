@@ -1,0 +1,1755 @@
+{
+  "demonstration": "single successful end-to-end run attempt (NOT a reliability benchmark)",
+  "model": "qwen3:8b",
+  "model_selection_mechanism": "PIPER_LLM_MODEL environment variable (existing production config)",
+  "dataset": "benchmark_data/train.csv (Titanic, 891x12)",
+  "target": "Survived",
+  "run_id": "run_e13cf35f",
+  "dataset_id": "dataset_b4a8efe5",
+  "terminal_status": "completed",
+  "total_elapsed_seconds": 1184.9101810455322,
+  "production_config": {
+    "note": "unchanged; PIPER sends no options/temperature field",
+    "timeout_seconds": 600.0,
+    "keep_alive": "10m",
+    "max_retries_default": 2
+  },
+  "dataset_upload": {
+    "dataset_id": "dataset_b4a8efe5",
+    "filename": "train.csv",
+    "rows": 891,
+    "columns": [
+      "PassengerId",
+      "Survived",
+      "Pclass",
+      "Name",
+      "Sex",
+      "Age",
+      "SibSp",
+      "Parch",
+      "Ticket",
+      "Fare",
+      "Cabin",
+      "Embarked"
+    ],
+    "detected_format": "csv",
+    "column_count": 12,
+    "sheet_name": null,
+    "available_sheets": [],
+    "notes": []
+  },
+  "dataset_profile": {
+    "dataset_id": "dataset_b4a8efe5",
+    "rows": 891,
+    "columns": 12,
+    "column_profiles": [
+      {
+        "name": "PassengerId",
+        "dtype": "int64",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 891,
+        "unique_percentage": 100.0,
+        "sample_values": [
+          1,
+          2,
+          3,
+          4,
+          5
+        ],
+        "min": 1.0,
+        "max": 891.0,
+        "mean": 446.0,
+        "median": 446.0,
+        "std": 257.3538420152301
+      },
+      {
+        "name": "Survived",
+        "dtype": "int64",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 2,
+        "unique_percentage": 0.2245,
+        "sample_values": [
+          0,
+          1,
+          1,
+          1,
+          0
+        ],
+        "min": 0.0,
+        "max": 1.0,
+        "mean": 0.3838383838383838,
+        "median": 0.0,
+        "std": 0.4865924542648575
+      },
+      {
+        "name": "Pclass",
+        "dtype": "int64",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 3,
+        "unique_percentage": 0.3367,
+        "sample_values": [
+          3,
+          1,
+          3,
+          1,
+          3
+        ],
+        "min": 1.0,
+        "max": 3.0,
+        "mean": 2.308641975308642,
+        "median": 3.0,
+        "std": 0.836071240977049
+      },
+      {
+        "name": "Name",
+        "dtype": "str",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 891,
+        "unique_percentage": 100.0,
+        "sample_values": [
+          "Braund, Mr. Owen Harris",
+          "Cumings, Mrs. John Bradley (Florence Briggs Thayer)",
+          "Heikkinen, Miss. Laina",
+          "Futrelle, Mrs. Jacques Heath (Lily May Peel)",
+          "Allen, Mr. William Henry"
+        ],
+        "min": null,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "std": null
+      },
+      {
+        "name": "Sex",
+        "dtype": "str",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 2,
+        "unique_percentage": 0.2245,
+        "sample_values": [
+          "male",
+          "female",
+          "female",
+          "female",
+          "male"
+        ],
+        "min": null,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "std": null
+      },
+      {
+        "name": "Age",
+        "dtype": "float64",
+        "missing_count": 177,
+        "missing_percentage": 19.8653,
+        "unique_count": 88,
+        "unique_percentage": 9.8765,
+        "sample_values": [
+          22.0,
+          38.0,
+          26.0,
+          35.0,
+          35.0
+        ],
+        "min": 0.42,
+        "max": 80.0,
+        "mean": 29.69911764705882,
+        "median": 28.0,
+        "std": 14.526497332334042
+      },
+      {
+        "name": "SibSp",
+        "dtype": "int64",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 7,
+        "unique_percentage": 0.7856,
+        "sample_values": [
+          1,
+          1,
+          0,
+          1,
+          0
+        ],
+        "min": 0.0,
+        "max": 8.0,
+        "mean": 0.5230078563411896,
+        "median": 0.0,
+        "std": 1.1027434322934317
+      },
+      {
+        "name": "Parch",
+        "dtype": "int64",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 7,
+        "unique_percentage": 0.7856,
+        "sample_values": [
+          0,
+          0,
+          0,
+          0,
+          0
+        ],
+        "min": 0.0,
+        "max": 6.0,
+        "mean": 0.38159371492704824,
+        "median": 0.0,
+        "std": 0.8060572211299483
+      },
+      {
+        "name": "Ticket",
+        "dtype": "str",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 681,
+        "unique_percentage": 76.431,
+        "sample_values": [
+          "A/5 21171",
+          "PC 17599",
+          "STON/O2. 3101282",
+          "113803",
+          "373450"
+        ],
+        "min": null,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "std": null
+      },
+      {
+        "name": "Fare",
+        "dtype": "float64",
+        "missing_count": 0,
+        "missing_percentage": 0.0,
+        "unique_count": 248,
+        "unique_percentage": 27.8339,
+        "sample_values": [
+          7.25,
+          71.2833,
+          7.925,
+          53.1,
+          8.05
+        ],
+        "min": 0.0,
+        "max": 512.3292,
+        "mean": 32.204207968574636,
+        "median": 14.4542,
+        "std": 49.6934285971809
+      },
+      {
+        "name": "Cabin",
+        "dtype": "str",
+        "missing_count": 687,
+        "missing_percentage": 77.1044,
+        "unique_count": 147,
+        "unique_percentage": 16.4983,
+        "sample_values": [
+          "C85",
+          "C123",
+          "E46",
+          "G6",
+          "C103"
+        ],
+        "min": null,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "std": null
+      },
+      {
+        "name": "Embarked",
+        "dtype": "str",
+        "missing_count": 2,
+        "missing_percentage": 0.2245,
+        "unique_count": 3,
+        "unique_percentage": 0.3367,
+        "sample_values": [
+          "S",
+          "C",
+          "S",
+          "S",
+          "S"
+        ],
+        "min": null,
+        "max": null,
+        "mean": null,
+        "median": null,
+        "std": null
+      }
+    ],
+    "duplicate_rows": 0,
+    "memory_usage_bytes": 121742
+  },
+  "run_status_final": {
+    "run_id": "run_e13cf35f",
+    "dataset_id": "dataset_b4a8efe5",
+    "target_column": "Survived",
+    "status": "completed",
+    "current_node": "report",
+    "attempt": 2,
+    "plan_history": [
+      "0d812753ef37b96ae0aee24df0958e0a469ab8e80922aa57909797248d124412",
+      "734913933153935d25f04e0622864dbc00d30a72f45b4b513bd20b2f7eb5b915",
+      "0cc5cc34ba7394d3b7f6659ed2e20cd3185ae571093eb74daf0453bb4a0d2bac"
+    ]
+  },
+  "result": {
+    "run_id": "run_e13cf35f",
+    "status": "completed",
+    "validation": {
+      "dataset_id": "run_e13cf35f_data",
+      "target_column": "Survived",
+      "valid": true,
+      "checks": [
+        {
+          "check": "data_leakage",
+          "passed": true,
+          "severity": "info",
+          "message": "No leakage indicators detected by implemented checks, among 9 feature(s) checked."
+        },
+        {
+          "check": "target_imbalance",
+          "passed": true,
+          "severity": "info",
+          "message": "Minority class '1' is 38.38% of the data \u2014 within acceptable balance."
+        },
+        {
+          "check": "constant_features",
+          "passed": true,
+          "severity": "info",
+          "message": "No constant columns found among 9 checked."
+        },
+        {
+          "check": "high_cardinality",
+          "passed": true,
+          "severity": "info",
+          "message": "No high-cardinality columns found among 9 checked."
+        },
+        {
+          "check": "suspicious_evaluation_metric",
+          "passed": true,
+          "severity": "info",
+          "message": "Evaluation metric within plausible range (F1=0.2526, accuracy=0.6034)."
+        },
+        {
+          "check": "baseline_gate",
+          "passed": true,
+          "severity": "info",
+          "message": "Baseline's f1 is mathematically undefined (majority class '0' never predicts the positive class '1', so precision/recall/F1 have no defined value). Gate passes by policy: an undefined baseline cannot be used to reject the model, but this should be treated as weak evidence, not strong evidence of model quality."
+        }
+      ],
+      "violations": [],
+      "warnings": [],
+      "scope_note": "valid=True means no implemented guardrail violation was detected by the checks run here (leakage, imbalance, constant features, high cardinality, and \u2014 where applicable \u2014 a suspiciously high evaluation metric forcing a leakage re-check). It is not a proof that the pipeline is free of every possible problem, only that the specific, implemented guardrails found no violation."
+    },
+    "comparison": {
+      "models": [
+        {
+          "model_id": "model_c4ca8268",
+          "algorithm": "random_forest",
+          "accuracy": 0.5642,
+          "precision": 0.4286,
+          "recall": 0.3913,
+          "f1": 0.4091,
+          "roc_auc": 0.5854
+        },
+        {
+          "model_id": "model_e3b4f323",
+          "algorithm": "logistic_regression",
+          "accuracy": 0.6034,
+          "precision": 0.4615,
+          "recall": 0.1739,
+          "f1": 0.2526,
+          "roc_auc": 0.6507
+        }
+      ],
+      "recommended_model_id": "model_c4ca8268",
+      "selection_metric": "f1",
+      "justification": "random_forest selected: F1=0.4091 vs. 0.2526 for logistic_regression."
+    },
+    "baseline": {
+      "model_id": "model_c4ca8268",
+      "split_id": "split_c2539ca0",
+      "baseline": {
+        "accuracy": 0.6145,
+        "precision": null,
+        "recall": null,
+        "f1": null,
+        "majority_class": "0"
+      },
+      "model_primary_metric_value": 0.4091,
+      "baseline_primary_metric_value": null,
+      "primary_metric": "f1",
+      "delta": null,
+      "minimum_required_delta": 0.05,
+      "gate_passed": true,
+      "reason": "Baseline's f1 is mathematically undefined (majority class '0' never predicts the positive class '1', so precision/recall/F1 have no defined value). Gate passes by policy: an undefined baseline cannot be used to reject the model, but this should be treated as weak evidence, not strong evidence of model quality."
+    },
+    "failure": null,
+    "reproducibility": {
+      "environment": {
+        "python_version": "3.11.0 (main, Oct 24 2022, 18:26:48) [MSC v.1933 64 bit (AMD64)]",
+        "pandas_version": "3.0.2",
+        "numpy_version": "2.4.6",
+        "sklearn_version": "1.8.0"
+      },
+      "dataset_fingerprint": "e4cf59832fd4004e29d7bda060ff1bdd0d17116d61dfde3ab8b28da59b92f84a",
+      "split_random_state": 42,
+      "model_random_state": 42,
+      "pipeline_fingerprint": "e5bfb63eebd6e0a7563c1170e4ff6ca0edd70e5f49da62af5619b3e5c8edd15b"
+    },
+    "model_results": [
+      {
+        "model_id": "model_c4ca8268",
+        "algorithm": "random_forest",
+        "parameters": {
+          "n_estimators": 200,
+          "max_depth": 15
+        },
+        "split_id": "split_c2539ca0",
+        "training_rows": 712,
+        "feature_count": 2,
+        "training_duration_seconds": 0.6419
+      },
+      {
+        "model_id": "model_e3b4f323",
+        "algorithm": "logistic_regression",
+        "parameters": {
+          "C": 1.0,
+          "max_iter": 1000
+        },
+        "split_id": "split_c2539ca0",
+        "training_rows": 712,
+        "feature_count": 2,
+        "training_duration_seconds": 0.0723
+      }
+    ],
+    "evaluation_results": [
+      {
+        "model_id": "model_c4ca8268",
+        "split_id": "split_c2539ca0",
+        "accuracy": 0.5642,
+        "precision": 0.4286,
+        "recall": 0.3913,
+        "f1": 0.4091,
+        "roc_auc": 0.5854,
+        "confusion_matrix": {
+          "tn": 74,
+          "fp": 36,
+          "fn": 42,
+          "tp": 27
+        },
+        "test_rows": 179
+      },
+      {
+        "model_id": "model_e3b4f323",
+        "split_id": "split_c2539ca0",
+        "accuracy": 0.6034,
+        "precision": 0.4615,
+        "recall": 0.1739,
+        "f1": 0.2526,
+        "roc_auc": 0.6507,
+        "confusion_matrix": {
+          "tn": 96,
+          "fp": 14,
+          "fn": 57,
+          "tp": 12
+        },
+        "test_rows": 179
+      }
+    ],
+    "error": "Plan is structurally valid but inadequate: 1 material finding(s) across ['missing_values'], affecting ['Age']."
+  },
+  "summary": {
+    "run_id": "run_e13cf35f",
+    "status": "completed",
+    "retry_count": 2,
+    "replanned": true,
+    "candidate_models": [
+      {
+        "model_id": "model_c4ca8268",
+        "algorithm": "random_forest",
+        "accuracy": 0.5642,
+        "precision": 0.4286,
+        "recall": 0.3913,
+        "f1": 0.4091,
+        "roc_auc": 0.5854
+      },
+      {
+        "model_id": "model_e3b4f323",
+        "algorithm": "logistic_regression",
+        "accuracy": 0.6034,
+        "precision": 0.4615,
+        "recall": 0.1739,
+        "f1": 0.2526,
+        "roc_auc": 0.6507
+      }
+    ],
+    "winning_model_id": "model_c4ca8268",
+    "winning_algorithm": "random_forest",
+    "selection_justification": "random_forest selected: F1=0.4091 vs. 0.2526 for logistic_regression.",
+    "operations_executed": [
+      {
+        "operation_id": "op_31b96381",
+        "tool_name": "impute_missing_values",
+        "arguments": {
+          "column": "Age",
+          "strategy": "median"
+        },
+        "result_summary": "Imputed 177 missing value(s) in 'Age' using median (replacement: 28.0000).",
+        "reason": "The previous plan failed because the Age column had missing values and was used as a training feature, leading to potential errors in the model training. Imputing the missing values in Age with the median strategy addresses this issue.",
+        "timestamp": "2026-08-17T14:45:42.465435+00:00"
+      },
+      {
+        "operation_id": "op_d89285e5",
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Cabin"
+        },
+        "result_summary": "Dropped column 'Cabin'. Columns: 12 -> 11.",
+        "reason": "The Cabin column has a high percentage of missing values, and dropping it prevents it from being silently excluded or causing issues during model training.",
+        "timestamp": "2026-08-17T14:45:42.475750+00:00"
+      },
+      {
+        "operation_id": "op_0869f41a",
+        "tool_name": "drop_column",
+        "arguments": {
+          "column": "Name"
+        },
+        "result_summary": "Dropped column 'Name'. Columns: 11 -> 10.",
+        "reason": "The Name column was already dropped in the previous plan, but it's included again to ensure consistency and address any potential issues related to its presence.",
+        "timestamp": "2026-08-17T14:45:42.475750+00:00"
+      },
+      {
+        "operation_id": "op_54e6b636",
+        "tool_name": "scale_features",
+        "arguments": {
+          "columns": [
+            "Age",
+            "Fare"
+          ]
+        },
+        "result_summary": "Validated scaling request for 2 column(s). Actual scaler is fit at train_model() time on the train split only.",
+        "reason": "Scaling the Age and Fare columns standardizes their values, which is necessary for many machine learning algorithms to perform optimally.",
+        "timestamp": "2026-08-17T14:45:42.491461+00:00"
+      }
+    ],
+    "guardrail_valid": true,
+    "guardrail_checks": [
+      {
+        "check": "data_leakage",
+        "passed": true,
+        "severity": "info",
+        "message": "No leakage indicators detected by implemented checks, among 9 feature(s) checked."
+      },
+      {
+        "check": "target_imbalance",
+        "passed": true,
+        "severity": "info",
+        "message": "Minority class '1' is 38.38% of the data \u2014 within acceptable balance."
+      },
+      {
+        "check": "constant_features",
+        "passed": true,
+        "severity": "info",
+        "message": "No constant columns found among 9 checked."
+      },
+      {
+        "check": "high_cardinality",
+        "passed": true,
+        "severity": "info",
+        "message": "No high-cardinality columns found among 9 checked."
+      },
+      {
+        "check": "suspicious_evaluation_metric",
+        "passed": true,
+        "severity": "info",
+        "message": "Evaluation metric within plausible range (F1=0.2526, accuracy=0.6034)."
+      },
+      {
+        "check": "baseline_gate",
+        "passed": true,
+        "severity": "info",
+        "message": "Baseline's f1 is mathematically undefined (majority class '0' never predicts the positive class '1', so precision/recall/F1 have no defined value). Gate passes by policy: an undefined baseline cannot be used to reject the model, but this should be treated as weak evidence, not strong evidence of model quality."
+      }
+    ],
+    "guardrail_violations": [],
+    "guardrail_warnings": []
+  },
+  "timeline": {
+    "run_id": "run_e13cf35f",
+    "phases": [
+      {
+        "phase": "Validate Input",
+        "node": "validate_input",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:26:01.281767+00:00",
+        "ended_at": "2026-08-17T14:26:01.281767+00:00"
+      },
+      {
+        "phase": "Profile",
+        "node": "profile",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:26:01.324484+00:00",
+        "ended_at": "2026-08-17T14:26:01.324484+00:00"
+      },
+      {
+        "phase": "Sanitize",
+        "node": "sanitize",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:26:01.377203+00:00",
+        "ended_at": "2026-08-17T14:26:01.377203+00:00"
+      },
+      {
+        "phase": "Plan",
+        "node": "plan_entry",
+        "attempt": 0,
+        "status": "failure",
+        "event_count": 2,
+        "started_at": "2026-08-17T14:26:01.377203+00:00",
+        "ended_at": "2026-08-17T14:33:33.558559+00:00"
+      },
+      {
+        "phase": "Plan",
+        "node": "plan_entry",
+        "attempt": 1,
+        "status": "failure",
+        "event_count": 2,
+        "started_at": "2026-08-17T14:33:33.563341+00:00",
+        "ended_at": "2026-08-17T14:39:28.273139+00:00"
+      },
+      {
+        "phase": "Plan",
+        "node": "plan_entry",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 2,
+        "started_at": "2026-08-17T14:39:28.273634+00:00",
+        "ended_at": "2026-08-17T14:45:42.443934+00:00"
+      },
+      {
+        "phase": "Clean",
+        "node": "clean",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:42.475750+00:00",
+        "ended_at": "2026-08-17T14:45:42.475750+00:00"
+      },
+      {
+        "phase": "Feature Engineer",
+        "node": "feature_engineer",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:42.491461+00:00",
+        "ended_at": "2026-08-17T14:45:42.491461+00:00"
+      },
+      {
+        "phase": "Split",
+        "node": "split",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:42.523772+00:00",
+        "ended_at": "2026-08-17T14:45:42.523772+00:00"
+      },
+      {
+        "phase": "Reproducibility",
+        "node": "reproducibility",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:42.555061+00:00",
+        "ended_at": "2026-08-17T14:45:42.555061+00:00"
+      },
+      {
+        "phase": "Train",
+        "node": "train",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:43.284507+00:00",
+        "ended_at": "2026-08-17T14:45:43.284507+00:00"
+      },
+      {
+        "phase": "Evaluate",
+        "node": "evaluate",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:43.495034+00:00",
+        "ended_at": "2026-08-17T14:45:43.495034+00:00"
+      },
+      {
+        "phase": "Compare",
+        "node": "compare",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:43.625448+00:00",
+        "ended_at": "2026-08-17T14:45:43.625448+00:00"
+      },
+      {
+        "phase": "Baseline",
+        "node": "baseline",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:43.657619+00:00",
+        "ended_at": "2026-08-17T14:45:43.657619+00:00"
+      },
+      {
+        "phase": "Validate",
+        "node": "validate",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:44.110013+00:00",
+        "ended_at": "2026-08-17T14:45:44.110013+00:00"
+      },
+      {
+        "phase": "Report",
+        "node": "report",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:44.110013+00:00",
+        "ended_at": "2026-08-17T14:45:44.110013+00:00"
+      },
+      {
+        "phase": "Validate Input",
+        "node": "input_validator",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:26:01.281767+00:00",
+        "ended_at": "2026-08-17T14:26:01.281767+00:00"
+      },
+      {
+        "phase": "Profile",
+        "node": "profiler",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:26:01.324484+00:00",
+        "ended_at": "2026-08-17T14:26:01.324484+00:00"
+      },
+      {
+        "phase": "Sanitize",
+        "node": "sanitizer",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:26:01.377203+00:00",
+        "ended_at": "2026-08-17T14:26:01.377203+00:00"
+      },
+      {
+        "phase": "Clean",
+        "node": "cleaner",
+        "attempt": 0,
+        "status": "failure",
+        "event_count": 4,
+        "started_at": "2026-08-17T14:45:42.465435+00:00",
+        "ended_at": "2026-08-17T14:45:42.475750+00:00"
+      },
+      {
+        "phase": "Feature Engineer",
+        "node": "feature_engineer",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:42.491461+00:00",
+        "ended_at": "2026-08-17T14:45:42.491461+00:00"
+      },
+      {
+        "phase": "Split",
+        "node": "splitter",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:42.523772+00:00",
+        "ended_at": "2026-08-17T14:45:42.523772+00:00"
+      },
+      {
+        "phase": "Train",
+        "node": "trainer",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 2,
+        "started_at": "2026-08-17T14:45:43.208500+00:00",
+        "ended_at": "2026-08-17T14:45:43.284507+00:00"
+      },
+      {
+        "phase": "Evaluate",
+        "node": "evaluator",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 2,
+        "started_at": "2026-08-17T14:45:43.468468+00:00",
+        "ended_at": "2026-08-17T14:45:43.495034+00:00"
+      },
+      {
+        "phase": "Compare",
+        "node": "comparator",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:43.625448+00:00",
+        "ended_at": "2026-08-17T14:45:43.625448+00:00"
+      },
+      {
+        "phase": "Baseline",
+        "node": "baseline",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:43.657619+00:00",
+        "ended_at": "2026-08-17T14:45:43.657619+00:00"
+      },
+      {
+        "phase": "Validate",
+        "node": "validator",
+        "attempt": 0,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:44.094137+00:00",
+        "ended_at": "2026-08-17T14:45:44.094137+00:00"
+      },
+      {
+        "phase": "Complete",
+        "node": "report",
+        "attempt": 2,
+        "status": "success",
+        "event_count": 1,
+        "started_at": "2026-08-17T14:45:44.110013+00:00",
+        "ended_at": "2026-08-17T14:45:44.110013+00:00"
+      }
+    ],
+    "replan_count": 2,
+    "final_status": "completed"
+  },
+  "learn_explanation": {
+    "run_id": "run_e13cf35f",
+    "status": "completed",
+    "preprocessing": [
+      {
+        "operation_id": "op_31b96381",
+        "tool_name": "impute_missing_values",
+        "what_happened": "PIPER filled in missing values in a column. Imputed 177 missing value(s) in 'Age' using median (replacement: 28.0000).",
+        "why": "The previous plan failed because the Age column had missing values and was used as a training feature, leading to potential errors in the model training. Imputing the missing values in Age with the median strategy addresses this issue."
+      },
+      {
+        "operation_id": "op_d89285e5",
+        "tool_name": "drop_column",
+        "what_happened": "PIPER removed a column entirely from the dataset. Dropped column 'Cabin'. Columns: 12 -> 11.",
+        "why": "The Cabin column has a high percentage of missing values, and dropping it prevents it from being silently excluded or causing issues during model training."
+      },
+      {
+        "operation_id": "op_0869f41a",
+        "tool_name": "drop_column",
+        "what_happened": "PIPER removed a column entirely from the dataset. Dropped column 'Name'. Columns: 11 -> 10.",
+        "why": "The Name column was already dropped in the previous plan, but it's included again to ensure consistency and address any potential issues related to its presence."
+      }
+    ],
+    "feature_engineering": [
+      {
+        "operation_id": "op_54e6b636",
+        "tool_name": "scale_features",
+        "what_happened": "PIPER standardized (Z-score scaled) one or more numeric columns. Validated scaling request for 2 column(s). Actual scaler is fit at train_model() time on the train split only.",
+        "why": "Scaling the Age and Fare columns standardizes their values, which is necessary for many machine learning algorithms to perform optimally."
+      }
+    ],
+    "model_selection": {
+      "recommended_model_id": "model_c4ca8268",
+      "recommended_algorithm": "random_forest",
+      "justification": "random_forest selected: F1=0.4091 vs. 0.2526 for logistic_regression.",
+      "candidates": [
+        {
+          "model_id": "model_c4ca8268",
+          "algorithm": "random_forest",
+          "accuracy": 0.5642,
+          "precision": 0.4286,
+          "recall": 0.3913,
+          "f1": 0.4091,
+          "roc_auc": 0.5854
+        },
+        {
+          "model_id": "model_e3b4f323",
+          "algorithm": "logistic_regression",
+          "accuracy": 0.6034,
+          "precision": 0.4615,
+          "recall": 0.1739,
+          "f1": 0.2526,
+          "roc_auc": 0.6507
+        }
+      ]
+    },
+    "evaluation": [
+      {
+        "model_id": "model_c4ca8268",
+        "metrics": [
+          {
+            "metric": "accuracy",
+            "value": 0.5642,
+            "meaning": "Accuracy = 0.5642 \u2014 this fraction of all predictions on the held-out test split were correct."
+          },
+          {
+            "metric": "precision",
+            "value": 0.4286,
+            "meaning": "Precision = 0.4286 \u2014 of every case the model predicted positive, this fraction actually was."
+          },
+          {
+            "metric": "recall",
+            "value": 0.3913,
+            "meaning": "Recall = 0.3913 \u2014 of every case that was actually positive, the model correctly caught this fraction."
+          },
+          {
+            "metric": "f1",
+            "value": 0.4091,
+            "meaning": "F1 Score = 0.4091 \u2014 the balance between precision and recall (PIPER's locked model-selection metric)."
+          },
+          {
+            "metric": "roc_auc",
+            "value": 0.5854,
+            "meaning": "ROC-AUC = 0.5854 \u2014 how well the model separates the two classes across every possible decision threshold (1.0 = perfect, 0.5 = random guessing)."
+          }
+        ],
+        "confusion_matrix_meaning": "Out of 179 test rows: 27 true positives, 74 true negatives, 36 false positives, 42 false negatives.",
+        "baseline_comparison": "Baseline's f1 is mathematically undefined (majority class '0' never predicts the positive class '1', so precision/recall/F1 have no defined value). Gate passes by policy: an undefined baseline cannot be used to reject the model, but this should be treated as weak evidence, not strong evidence of model quality."
+      },
+      {
+        "model_id": "model_e3b4f323",
+        "metrics": [
+          {
+            "metric": "accuracy",
+            "value": 0.6034,
+            "meaning": "Accuracy = 0.6034 \u2014 this fraction of all predictions on the held-out test split were correct."
+          },
+          {
+            "metric": "precision",
+            "value": 0.4615,
+            "meaning": "Precision = 0.4615 \u2014 of every case the model predicted positive, this fraction actually was."
+          },
+          {
+            "metric": "recall",
+            "value": 0.1739,
+            "meaning": "Recall = 0.1739 \u2014 of every case that was actually positive, the model correctly caught this fraction."
+          },
+          {
+            "metric": "f1",
+            "value": 0.2526,
+            "meaning": "F1 Score = 0.2526 \u2014 the balance between precision and recall (PIPER's locked model-selection metric)."
+          },
+          {
+            "metric": "roc_auc",
+            "value": 0.6507,
+            "meaning": "ROC-AUC = 0.6507 \u2014 how well the model separates the two classes across every possible decision threshold (1.0 = perfect, 0.5 = random guessing)."
+          }
+        ],
+        "confusion_matrix_meaning": "Out of 179 test rows: 12 true positives, 96 true negatives, 14 false positives, 57 false negatives.",
+        "baseline_comparison": null
+      }
+    ],
+    "guardrail_checks": [
+      {
+        "check": "data_leakage",
+        "passed": true,
+        "severity": "info",
+        "meaning": "Checks whether any feature is suspiciously predictive of the target (e.g. a near-duplicate of the target, or an identifier-like column) \u2014 a sign the model could be 'cheating' by seeing information it shouldn't have at prediction time.",
+        "message": "No leakage indicators detected by implemented checks, among 9 feature(s) checked."
+      },
+      {
+        "check": "target_imbalance",
+        "passed": true,
+        "severity": "info",
+        "meaning": "Checks how skewed the target class distribution is \u2014 a severely imbalanced target (minority class under 5%) can make a trivial always-predict-the-majority model look deceptively good.",
+        "message": "Minority class '1' is 38.38% of the data \u2014 within acceptable balance."
+      },
+      {
+        "check": "constant_features",
+        "passed": true,
+        "severity": "info",
+        "meaning": "Checks for columns with only one distinct value (or entirely missing) \u2014 a constant feature carries no predictive information and cannot meaningfully contribute to a trained model.",
+        "message": "No constant columns found among 9 checked."
+      },
+      {
+        "check": "high_cardinality",
+        "passed": true,
+        "severity": "info",
+        "meaning": "Checks for categorical columns that are almost entirely unique values (over 99%) \u2014 a sign the column is actually an identifier (like a customer ID), not a genuine predictive feature.",
+        "message": "No high-cardinality columns found among 9 checked."
+      },
+      {
+        "check": "suspicious_evaluation_metric",
+        "passed": true,
+        "severity": "info",
+        "meaning": "Checks whether the trained model's evaluation metric is implausibly high \u2014 a common symptom of undetected data leakage.",
+        "message": "Evaluation metric within plausible range (F1=0.2526, accuracy=0.6034)."
+      },
+      {
+        "check": "baseline_gate",
+        "passed": true,
+        "severity": "info",
+        "meaning": "Checks whether the trained model meaningfully outperforms a trivial majority-class baseline on the same test split (see the Baseline Gate policy).",
+        "message": "Baseline's f1 is mathematically undefined (majority class '0' never predicts the positive class '1', so precision/recall/F1 have no defined value). Gate passes by policy: an undefined baseline cannot be used to reject the model, but this should be treated as weak evidence, not strong evidence of model quality."
+      }
+    ],
+    "failure": null
+  },
+  "trace_events": [
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_6f9bcc76",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "validate_input",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:26:01.281767+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_d382d411",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "profile",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:26:01.324484+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "profile",
+          "status",
+          "steps_executed",
+          "task_type",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_80eb2cc6",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "sanitize",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:26:01.377203+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "sanitization_report",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_37e22a9b",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "plan_entry",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:26:01.377203+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_978db663",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "plan",
+      "event_type": "node_failed",
+      "timestamp": "2026-08-17T14:33:33.558559+00:00",
+      "status": "failure",
+      "severity": "error",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "error",
+          "failure",
+          "plan_history",
+          "status",
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": "Plan is structurally valid but inadequate: 1 material finding(s) across ['missing_values'], affecting ['Embarked']."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_22933723",
+      "parent_span_id": null,
+      "attempt": 1,
+      "node": "plan_entry",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:33:33.563341+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "retry_count",
+          "status",
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_cc8af1e4",
+      "parent_span_id": null,
+      "attempt": 1,
+      "node": "plan",
+      "event_type": "node_failed",
+      "timestamp": "2026-08-17T14:39:28.273139+00:00",
+      "status": "failure",
+      "severity": "error",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "error",
+          "failure",
+          "plan_history",
+          "status",
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": "Plan is structurally valid but inadequate: 1 material finding(s) across ['missing_values'], affecting ['Age']."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_f44c2cf9",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "plan_entry",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:39:28.273634+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "retry_count",
+          "status",
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_bb3edb17",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "plan",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:42.443934+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "plan",
+          "plan_history",
+          "status",
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_a5c26883",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "clean",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:42.475750+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "cleaning_log",
+          "plan",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_31206ff6",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "feature_engineer",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:42.491461+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "feature_log",
+          "plan",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_6448b338",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "split",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:42.523772+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "split_id",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_77437606",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "reproducibility",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:42.555061+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "reproducibility",
+          "status",
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_fe95620d",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "train",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:43.284507+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "model_results",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_2f0b8c35",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "evaluate",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:43.495034+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "evaluation_results",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_dd677b55",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "compare",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:43.625448+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "comparison",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_b377b924",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "baseline",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:43.657619+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "baseline",
+          "status",
+          "steps_executed",
+          "tool_trace"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_321f65f1",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "validate",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:44.110013+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "status",
+          "steps_executed",
+          "tool_trace",
+          "validation"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_35c893dd",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "report",
+      "event_type": "node_completed",
+      "timestamp": "2026-08-17T14:45:44.110013+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "updated_fields": [
+          "failure",
+          "status",
+          "steps_executed"
+        ]
+      },
+      "duration_ms": 0.0,
+      "message": ""
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_40f12b67",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "input_validator",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:26:01.281767+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "validate_data_quality",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Data quality check passed: 12 column(s), 891 row(s)."
+      },
+      "duration_ms": 0.0,
+      "message": "Data quality check passed: 12 column(s), 891 row(s)."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_eb765c55",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "profiler",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:26:01.324484+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "profile_dataset",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Profiled dataset 'run_e13cf35f_data': 891 rows, 12 columns."
+      },
+      "duration_ms": 0.0,
+      "message": "Profiled dataset 'run_e13cf35f_data': 891 rows, 12 columns."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_614e1bcc",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "sanitizer",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:26:01.377203+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "sanitize_for_llm_context",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Scanned 12 column(s); 0 finding(s), 0 value(s) excluded, 0 truncated. Original dataset unchanged."
+      },
+      "duration_ms": 0.0,
+      "message": "Scanned 12 column(s); 0 finding(s), 0 value(s) excluded, 0 truncated. Original dataset unchanged."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_9615e33e",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "cleaner",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:42.465435+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "impute_missing_values",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Imputed 177 missing value(s) in 'Age' using median (replacement: 28.0000)."
+      },
+      "duration_ms": 0.0,
+      "message": "Imputed 177 missing value(s) in 'Age' using median (replacement: 28.0000)."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_14e0fb63",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "cleaner",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:42.475750+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "drop_column",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Dropped column 'Cabin'. Columns: 12 -> 11."
+      },
+      "duration_ms": 0.0,
+      "message": "Dropped column 'Cabin'. Columns: 12 -> 11."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_1b2622f1",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "cleaner",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:42.475750+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "drop_column",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Dropped column 'Name'. Columns: 11 -> 10."
+      },
+      "duration_ms": 0.0,
+      "message": "Dropped column 'Name'. Columns: 11 -> 10."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_5188a38e",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "cleaner",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:42.475750+00:00",
+      "status": "failure",
+      "severity": "error",
+      "tool_name": "impute_missing_values",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Strategy 'median' requires a numeric column; 'Embarked' is not numeric."
+      },
+      "duration_ms": 0.0,
+      "message": "Strategy 'median' requires a numeric column; 'Embarked' is not numeric."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_619d94da",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "feature_engineer",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:42.491461+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "scale_features",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Validated scaling request for 2 column(s). Actual scaler is fit at train_model() time on the train split only."
+      },
+      "duration_ms": 0.0,
+      "message": "Validated scaling request for 2 column(s). Actual scaler is fit at train_model() time on the train split only."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_15463bb1",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "splitter",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:42.523772+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "split_dataset",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Split dataset 'run_e13cf35f_data' into 712 train / 179 test rows (stratified on 'Survived')."
+      },
+      "duration_ms": 0.0,
+      "message": "Split dataset 'run_e13cf35f_data' into 712 train / 179 test rows (stratified on 'Survived')."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_6478d430",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "trainer",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:43.208500+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "train_model",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Trained random_forest on 712 rows, 2 feature(s), in 0.6419s."
+      },
+      "duration_ms": 0.0,
+      "message": "Trained random_forest on 712 rows, 2 feature(s), in 0.6419s."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_558b11eb",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "trainer",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:43.284507+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "train_model",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Trained logistic_regression on 712 rows, 2 feature(s), in 0.0723s."
+      },
+      "duration_ms": 0.0,
+      "message": "Trained logistic_regression on 712 rows, 2 feature(s), in 0.0723s."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_84dff217",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "evaluator",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:43.468468+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "evaluate_model",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Evaluated model 'model_c4ca8268' on 179 test rows: F1=0.4091, ROC-AUC=0.5854."
+      },
+      "duration_ms": 0.0,
+      "message": "Evaluated model 'model_c4ca8268' on 179 test rows: F1=0.4091, ROC-AUC=0.5854."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_eee53646",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "evaluator",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:43.495034+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "evaluate_model",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Evaluated model 'model_e3b4f323' on 179 test rows: F1=0.2526, ROC-AUC=0.6507."
+      },
+      "duration_ms": 0.0,
+      "message": "Evaluated model 'model_e3b4f323' on 179 test rows: F1=0.2526, ROC-AUC=0.6507."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_220e25d8",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "comparator",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:43.625448+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "compare_models",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Compared 2 model(s); recommended 'model_c4ca8268' (random_forest) with F1=0.4091."
+      },
+      "duration_ms": 0.0,
+      "message": "Compared 2 model(s); recommended 'model_c4ca8268' (random_forest) with F1=0.4091."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_3dc1b336",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "baseline",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:43.657619+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "compute_baseline",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Baseline's f1 is mathematically undefined (majority class '0' never predicts the positive class '1', so precision/recall/F1 have no defined value). Gate passes by policy: an undefined baseline cannot be used to reject the model, but this should be treated as weak evidence, not strong evidence of model quality."
+      },
+      "duration_ms": 0.0,
+      "message": "Baseline's f1 is mathematically undefined (majority class '0' never predicts the positive class '1', so precision/recall/F1 have no defined value). Gate passes by policy: an undefined baseline cannot be used to reject the model, but this should be treated as weak evidence, not strong evidence of model quality."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_179ae396",
+      "parent_span_id": null,
+      "attempt": 0,
+      "node": "validator",
+      "event_type": "tool_called",
+      "timestamp": "2026-08-17T14:45:44.094137+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": "validate_pipeline",
+      "guardrail_name": null,
+      "evidence": {
+        "message": "Pipeline validation passed: no guardrail violations among 6 check(s) run (0 warning(s))."
+      },
+      "duration_ms": 0.0,
+      "message": "Pipeline validation passed: no guardrail violations among 6 check(s) run (0 warning(s))."
+    },
+    {
+      "run_id": "run_e13cf35f",
+      "step_id": "trace_d6dca367",
+      "parent_span_id": null,
+      "attempt": 2,
+      "node": "report",
+      "event_type": "run_completed",
+      "timestamp": "2026-08-17T14:45:44.110013+00:00",
+      "status": "success",
+      "severity": "info",
+      "tool_name": null,
+      "guardrail_name": null,
+      "evidence": {
+        "final_status": "completed"
+      },
+      "duration_ms": 0.0,
+      "message": "Plan is structurally valid but inadequate: 1 material finding(s) across ['missing_values'], affecting ['Age']."
+    }
+  ]
+}

@@ -1,0 +1,171 @@
+[
+  {
+    "trial_id": 1,
+    "cold_or_warm": "cold",
+    "model": "qwen3:8b",
+    "temperature": 0.0,
+    "keep_alive": "10m",
+    "timeout": 600.0,
+    "first_attempt_structural_validity": false,
+    "first_attempt_adequacy": null,
+    "replan_count": 0,
+    "final_structural_validity": false,
+    "final_adequacy": false,
+    "final_executable_plan": null,
+    "end_to_end_success": false,
+    "training_completed": false,
+    "model_comparison_completed": false,
+    "final_report_generated": false,
+    "duplicate_plan": false,
+    "schema_failure": true,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout_failure": false,
+    "adequacy_failure": false,
+    "execution_failure": false,
+    "attempt_count": 0,
+    "total_wall_time": 506.92546486854553,
+    "generation_time": 0,
+    "failure_category": "SCHEMA_FAILURE",
+    "failure_reason": "Invalid tool argument structure",
+    "winner_model": null,
+    "winner_algorithm": null,
+    "qualitative_checks": {
+      "plan_steps_count": 0,
+      "age_addressed": false,
+      "embarked_addressed": false,
+      "target_survived_untouched": true,
+      "identifiers_handled": false,
+      "categorical_encoding_valid": false,
+      "numeric_scaling_valid": false,
+      "embarked_strategy": "NO_PLAN"
+    },
+    "attempts": []
+  },
+  {
+    "trial_id": 2,
+    "cold_or_warm": "warm",
+    "model": "qwen3:8b",
+    "temperature": 0.0,
+    "keep_alive": "10m",
+    "timeout": 600.0,
+    "first_attempt_structural_validity": true,
+    "first_attempt_adequacy": false,
+    "replan_count": 2,
+    "final_structural_validity": false,
+    "final_adequacy": false,
+    "final_executable_plan": null,
+    "end_to_end_success": false,
+    "training_completed": false,
+    "model_comparison_completed": false,
+    "final_report_generated": false,
+    "duplicate_plan": false,
+    "schema_failure": true,
+    "parse_failure": false,
+    "provider_failure": false,
+    "timeout_failure": true,
+    "adequacy_failure": false,
+    "execution_failure": false,
+    "attempt_count": 3,
+    "total_wall_time": 21925.663945436478,
+    "generation_time": 21925.24070763588,
+    "failure_category": "SCHEMA_FAILURE",
+    "failure_reason": "Invalid tool argument structure",
+    "winner_model": null,
+    "winner_algorithm": null,
+    "qualitative_checks": {
+      "plan_steps_count": 0,
+      "age_addressed": false,
+      "embarked_addressed": false,
+      "target_survived_untouched": true,
+      "identifiers_handled": false,
+      "categorical_encoding_valid": false,
+      "numeric_scaling_valid": false,
+      "embarked_strategy": "C (unhandled in effective features)"
+    },
+    "attempts": [
+      {
+        "attempt_index": 0,
+        "latency_seconds": 399.26379108428955,
+        "success": true,
+        "error": null,
+        "raw_steps": [
+          {
+            "action": "Drop high-risk columns",
+            "tool_name": "drop_column",
+            "arguments": {
+              "column": "Name"
+            },
+            "reasoning": "The 'Name' and 'Ticket' columns are flagged as high-risk and may contain sensitive information. Dropping 'Name' first as per the dataset context."
+          },
+          {
+            "action": "Impute missing values in Age",
+            "tool_name": "impute_missing_values",
+            "arguments": {
+              "column": "Age",
+              "strategy": "median"
+            },
+            "reasoning": "The 'Age' column has missing values (19.87% missing). Imputing with median is appropriate for numeric data."
+          },
+          {
+            "action": "Encode categorical features",
+            "tool_name": "encode_categorical_features",
+            "arguments": {
+              "columns": [
+                "Sex",
+                "Embarked"
+              ]
+            },
+            "reasoning": "The 'Sex' and 'Embarked' columns are categorical and need to be one-hot encoded for the classification model."
+          },
+          {
+            "action": "Scale numeric features",
+            "tool_name": "scale_features",
+            "arguments": {
+              "columns": [
+                "Age",
+                "Fare"
+              ]
+            },
+            "reasoning": "Scaling 'Age' and 'Fare' will standardize these numeric features for the model."
+          }
+        ],
+        "structurally_valid": true,
+        "violations": [],
+        "adequate": false,
+        "adequacy_findings": [
+          "missing_values (material): Embarked"
+        ],
+        "valid_steps_received": []
+      },
+      {
+        "attempt_index": 1,
+        "latency_seconds": 602.0568828582764,
+        "success": false,
+        "error": "Ollama did not respond within 600.0s.",
+        "raw_steps": null,
+        "structurally_valid": false,
+        "violations": [
+          "Ollama did not respond within 600.0s."
+        ],
+        "adequate": null,
+        "adequacy_findings": [],
+        "valid_steps_received": []
+      },
+      {
+        "attempt_index": 2,
+        "latency_seconds": 20923.920033693314,
+        "success": false,
+        "error": "Ollama did not respond within 600.0s.",
+        "raw_steps": null,
+        "structurally_valid": false,
+        "violations": [
+          "Ollama did not respond within 600.0s."
+        ],
+        "adequate": null,
+        "adequacy_findings": [],
+        "valid_steps_received": []
+      }
+    ]
+  }
+]

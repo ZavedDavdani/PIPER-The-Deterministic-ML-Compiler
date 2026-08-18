@@ -1,0 +1,96 @@
+
+
+
+
+
+
+
+
+
+
+
+{
+  "experiment": "adequacy_recovery_v1",
+  "timestamp_utc": "2026-08-14T11:11:53.951624+00:00",
+  "dataset_sha256": "7d118fef8b6ccf7f81111877bc388536f7b1e498a655e3d649d19aaa010e9f6f",
+  "dataset_shape": [
+    891,
+    12
+  ],
+  "prompt_sha256": "4e62fdd7486a6ed6a8bb04927aff9a26b5fc84046a6ada34c972392e5aa72297",
+  "tool_schema_sha256": "bbe23dd150f4d290d7079a43313be5094c0708a3f7512bff66455ef90bcd5ccf",
+  "keep_alive": "10m",
+  "timeout_seconds": 600.0,
+  "max_retries": 2,
+  "models": [
+    "qwen3:4b",
+    "qwen3.5:4b"
+  ],
+  "execution_order": [
+    "qwen3:4b",
+    "qwen3.5:4b"
+  ],
+  "n_trials_per_model": 3,
+  "note": "Each model runs on its OWN shipped sampling defaults; PIPER sends no options field."
+}
+
+========================================================================
+BLOCK: qwen3:4b
+========================================================================
+evicted; ollama ps = []
+
+-- qwen3:4b_trial1 (COLD) --
+   state=cold calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt1: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=6
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+
+-- qwen3:4b_trial2 (warm) --
+   state=warm calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt1: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=2
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+
+-- qwen3:4b_trial3 (warm) --
+   state=warm calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt1: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=6
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+
+========================================================================
+BLOCK: qwen3.5:4b
+========================================================================
+Exception in thread Thread-28 (_readerthread):
+Traceback (most recent call last):
+  File "C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 1038, in _bootstrap_inner
+    self.run()
+  File "C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\threading.py", line 975, in run
+    self._target(*self._args, **self._kwargs)
+  File "C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\subprocess.py", line 1550, in _readerthread
+    buffer.append(fh.read())
+                  ^^^^^^^^^
+  File "C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\encodings\cp1252.py", line 23, in decode
+    return codecs.charmap_decode(input,self.errors,decoding_table)[0]
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+UnicodeDecodeError: 'charmap' codec can't decode byte 0x8f in position 371: character maps to <undefined>
+evicted; ollama ps = []
+
+-- qwen3.5:4b_trial1 (COLD) --
+   state=cold calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=2
+      attempt1: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=3
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=2
+
+-- qwen3.5:4b_trial2 (warm) --
+   state=warm calls=3 first_adequate=False final=True outcome=SUCCESSFUL_PATCH ttx=581.4276699999755
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=2
+      attempt1: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=1
+      attempt2: stage=pass struct_valid=True adequacy=PASS cat=None steps=6
+
+-- qwen3.5:4b_trial3 (warm) --
+   state=warm calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt1: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=2
+
+Wrote C:\dev\PIPER\backend\benchmark_results\adequacy_recovery\raw_results.json

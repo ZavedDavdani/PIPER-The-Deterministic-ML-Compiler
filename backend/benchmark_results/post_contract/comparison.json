@@ -1,0 +1,313 @@
+{
+  "fingerprint": {
+    "benchmark_version": "post_contract_v1",
+    "dataset_sha256": "7d118fef8b6ccf7f81111877bc388536f7b1e498a655e3d649d19aaa010e9f6f",
+    "prompt_sha256": "4e62fdd7486a6ed6a8bb04927aff9a26b5fc84046a6ada34c972392e5aa72297",
+    "tool_schema_sha256": "bbe23dd150f4d290d7079a43313be5094c0708a3f7512bff66455ef90bcd5ccf",
+    "ollama_version": "ollama version is 0.32.9",
+    "keep_alive": "10m",
+    "timeout_seconds": 600.0,
+    "max_retries": 2,
+    "n_trials_per_model": 3,
+    "timestamp_utc": "2026-08-14T09:07:42.820105+00:00",
+    "models": [
+      "qwen3:4b",
+      "qwen3.5:4b"
+    ],
+    "execution_order": [
+      "qwen3:4b",
+      "qwen3.5:4b"
+    ],
+    "sampling_config_policy": "Each model runs on its OWN embedded defaults; PIPER sends no `options` field, so this is production-realistic. These defaults DIFFER between candidates (see model_default_parameters) \u2014 a documented confound: any observed difference is attributable to model+shipped-sampling-config jointly, not to model capability in isolation.",
+    "model_default_parameters": {
+      "qwen3:4b": {
+        "repeat_penalty": "1",
+        "stop": [
+          "\"<|im_start|>\"",
+          "\"<|im_end|>\""
+        ],
+        "temperature": "0.6",
+        "top_k": "20",
+        "top_p": "0.95"
+      },
+      "qwen3.5:4b": {
+        "presence_penalty": "1.5",
+        "temperature": "1",
+        "top_k": "20",
+        "top_p": "0.95"
+      }
+    }
+  },
+  "plan_quality_caveat": "Coverage checks are defined by this analysis script from objectively measurable Titanic properties; PIPER has no built-in plan-quality scorer. They are descriptive coverage facts, NOT a validated quality metric and NOT subjective scores. Deterministic validity remains PIPER's sole authority.",
+  "models": {
+    "qwen3:4b": {
+      "model": "qwen3:4b",
+      "trials": 3,
+      "first_attempt_valid_rate": "3/3",
+      "final_valid_rate": "3/3",
+      "replan_rate": "0/3",
+      "mean_replan_count": 0,
+      "mean_time_to_valid_plan_s": 234.47465663332454,
+      "median_time_to_valid_plan_s": 271.5939595999953,
+      "mean_total_planning_latency_s": 234.47465663332454,
+      "median_total_planning_latency_s": 271.5939595999953,
+      "mean_generation_latency_s": 184.59006733333334,
+      "mean_prompt_processing_latency_s": 43.95060533333333,
+      "mean_tokens_per_sec": 2.6346726084269156,
+      "mean_output_tokens": 445.3333333333333,
+      "mean_validation_violations": 0,
+      "timeout_rate": "0/3",
+      "technical_failure_rate": "0/3",
+      "cold_trial1_latency_s": 302.8838834000053,
+      "warm_trial2_latency_s": 271.5939595999953,
+      "warm_trial3_latency_s": 128.94612689997302,
+      "plan_coverage": [
+        {
+          "step_count": 5,
+          "target_never_touched": true,
+          "imputes_age": true,
+          "encodes_sex_and_embarked": true,
+          "handles_all_high_card_text": false,
+          "high_card_text_handled": [
+            "Name",
+            "Ticket"
+          ],
+          "high_card_text_left_raw": [
+            "Cabin"
+          ],
+          "drops_identifier_like": [
+            "Name"
+          ],
+          "identifier_like_left": [
+            "PassengerId"
+          ],
+          "applies_scaling": true,
+          "columns_dropped": [
+            "Name",
+            "Ticket"
+          ],
+          "columns_encoded": [
+            "Embarked",
+            "Sex"
+          ],
+          "columns_imputed": [
+            "Age"
+          ],
+          "columns_scaled": [
+            "Age",
+            "Fare"
+          ],
+          "trial_id": "qwen3:4b_trial1"
+        },
+        {
+          "step_count": 5,
+          "target_never_touched": true,
+          "imputes_age": true,
+          "encodes_sex_and_embarked": true,
+          "handles_all_high_card_text": false,
+          "high_card_text_handled": [
+            "Name",
+            "Ticket"
+          ],
+          "high_card_text_left_raw": [
+            "Cabin"
+          ],
+          "drops_identifier_like": [
+            "Name"
+          ],
+          "identifier_like_left": [
+            "PassengerId"
+          ],
+          "applies_scaling": true,
+          "columns_dropped": [
+            "Name",
+            "Ticket"
+          ],
+          "columns_encoded": [
+            "Embarked",
+            "Sex"
+          ],
+          "columns_imputed": [
+            "Age"
+          ],
+          "columns_scaled": [
+            "Age",
+            "Fare",
+            "Parch",
+            "SibSp"
+          ],
+          "trial_id": "qwen3:4b_trial2"
+        },
+        {
+          "step_count": 5,
+          "target_never_touched": true,
+          "imputes_age": true,
+          "encodes_sex_and_embarked": true,
+          "handles_all_high_card_text": false,
+          "high_card_text_handled": [
+            "Name",
+            "Ticket"
+          ],
+          "high_card_text_left_raw": [
+            "Cabin"
+          ],
+          "drops_identifier_like": [
+            "Name"
+          ],
+          "identifier_like_left": [
+            "PassengerId"
+          ],
+          "applies_scaling": true,
+          "columns_dropped": [
+            "Name",
+            "Ticket"
+          ],
+          "columns_encoded": [
+            "Embarked",
+            "Sex"
+          ],
+          "columns_imputed": [
+            "Age"
+          ],
+          "columns_scaled": [
+            "Age",
+            "Fare"
+          ],
+          "trial_id": "qwen3:4b_trial3"
+        }
+      ],
+      "plans_passing_all_critical_coverage": "0/3",
+      "plan_step_counts": [
+        5,
+        5,
+        5
+      ]
+    },
+    "qwen3.5:4b": {
+      "model": "qwen3.5:4b",
+      "trials": 3,
+      "first_attempt_valid_rate": "3/3",
+      "final_valid_rate": "3/3",
+      "replan_rate": "0/3",
+      "mean_replan_count": 0,
+      "mean_time_to_valid_plan_s": 124.71444886667693,
+      "median_time_to_valid_plan_s": 105.39655490001314,
+      "mean_total_planning_latency_s": 124.71444886667693,
+      "median_total_planning_latency_s": 105.39655490001314,
+      "mean_generation_latency_s": 60.36794666666667,
+      "mean_prompt_processing_latency_s": 56.002002,
+      "mean_tokens_per_sec": 3.877962150247088,
+      "mean_output_tokens": 231.33333333333334,
+      "mean_validation_violations": 0,
+      "timeout_rate": "0/3",
+      "technical_failure_rate": "0/3",
+      "cold_trial1_latency_s": 250.6640910000133,
+      "warm_trial2_latency_s": 105.39655490001314,
+      "warm_trial3_latency_s": 18.082700700004352,
+      "plan_coverage": [
+        {
+          "step_count": 3,
+          "target_never_touched": true,
+          "imputes_age": true,
+          "encodes_sex_and_embarked": true,
+          "handles_all_high_card_text": false,
+          "high_card_text_handled": [],
+          "high_card_text_left_raw": [
+            "Cabin",
+            "Name",
+            "Ticket"
+          ],
+          "drops_identifier_like": [
+            "PassengerId"
+          ],
+          "identifier_like_left": [
+            "Name"
+          ],
+          "applies_scaling": false,
+          "columns_dropped": [
+            "PassengerId"
+          ],
+          "columns_encoded": [
+            "Embarked",
+            "Sex"
+          ],
+          "columns_imputed": [
+            "Age"
+          ],
+          "columns_scaled": [],
+          "trial_id": "qwen3.5:4b_trial1"
+        },
+        {
+          "step_count": 5,
+          "target_never_touched": true,
+          "imputes_age": true,
+          "encodes_sex_and_embarked": true,
+          "handles_all_high_card_text": false,
+          "high_card_text_handled": [
+            "Ticket"
+          ],
+          "high_card_text_left_raw": [
+            "Cabin",
+            "Name"
+          ],
+          "drops_identifier_like": [
+            "PassengerId"
+          ],
+          "identifier_like_left": [
+            "Name"
+          ],
+          "applies_scaling": true,
+          "columns_dropped": [
+            "PassengerId",
+            "Ticket"
+          ],
+          "columns_encoded": [
+            "Embarked",
+            "Sex"
+          ],
+          "columns_imputed": [
+            "Age"
+          ],
+          "columns_scaled": [
+            "Age",
+            "Fare"
+          ],
+          "trial_id": "qwen3.5:4b_trial2"
+        },
+        {
+          "step_count": 1,
+          "target_never_touched": true,
+          "imputes_age": false,
+          "encodes_sex_and_embarked": true,
+          "handles_all_high_card_text": false,
+          "high_card_text_handled": [],
+          "high_card_text_left_raw": [
+            "Cabin",
+            "Name",
+            "Ticket"
+          ],
+          "drops_identifier_like": [],
+          "identifier_like_left": [
+            "Name",
+            "PassengerId"
+          ],
+          "applies_scaling": false,
+          "columns_dropped": [],
+          "columns_encoded": [
+            "Embarked",
+            "Sex"
+          ],
+          "columns_imputed": [],
+          "columns_scaled": [],
+          "trial_id": "qwen3.5:4b_trial3"
+        }
+      ],
+      "plans_passing_all_critical_coverage": "0/3",
+      "plan_step_counts": [
+        3,
+        5,
+        1
+      ]
+    }
+  }
+}

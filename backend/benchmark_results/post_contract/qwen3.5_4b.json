@@ -1,0 +1,263 @@
+{
+  "model": "qwen3.5:4b",
+  "trials": [
+    {
+      "model": "qwen3.5:4b",
+      "trial_id": "qwen3.5:4b_trial1",
+      "cold_or_warm": "cold",
+      "residency_before": [],
+      "residency_after": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "model": "qwen3.5:4b",
+          "trial_id": "qwen3.5:4b_trial1",
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "cold",
+          "prompt_build_ms": 0.6566999945789576,
+          "request_total_ms": 250664.0910000133,
+          "wall_clock_over_600s": false,
+          "transport_error": null,
+          "parse_duration_ms": 0.19690001499839127,
+          "validation_duration_ms": 0.10639999527484179,
+          "parse_error": null,
+          "ollama_stats": {
+            "total_duration_s": 248.5633325,
+            "load_duration_s": 15.2198664,
+            "prompt_eval_duration_s": 167.210015,
+            "eval_duration_s": 66.095721,
+            "prompt_eval_count": 2468,
+            "eval_count": 257,
+            "done_reason": "stop"
+          },
+          "output_tokens": 257,
+          "tokens_per_sec": 3.8883001215767057,
+          "structured_plan_produced": true,
+          "tool_names": [
+            "impute_missing_values",
+            "encode_categorical_features",
+            "drop_column"
+          ],
+          "tool_arguments": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "mean"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "PassengerId"
+              }
+            }
+          ],
+          "validation_passed": true,
+          "validation_violation_count": 0,
+          "validation_errors": [],
+          "failure_category": null,
+          "failure_details": null
+        }
+      ],
+      "first_attempt_valid": true,
+      "final_plan_valid": true,
+      "replan_count": 0,
+      "duplicate_plan_triggered": false,
+      "time_to_valid_plan": 250.6640910000133,
+      "total_planning_latency": 250.6640910000133,
+      "total_generation_latency": 66.095721,
+      "total_prompt_processing_latency": 167.210015
+    },
+    {
+      "model": "qwen3.5:4b",
+      "trial_id": "qwen3.5:4b_trial2",
+      "cold_or_warm": "warm",
+      "residency_before": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "residency_after": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "model": "qwen3.5:4b",
+          "trial_id": "qwen3.5:4b_trial2",
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "warm",
+          "prompt_build_ms": 0.7188000017777085,
+          "request_total_ms": 105396.55490001314,
+          "wall_clock_over_600s": false,
+          "transport_error": null,
+          "parse_duration_ms": 0.19150000298395753,
+          "validation_duration_ms": 0.09839999256655574,
+          "parse_error": null,
+          "ollama_stats": {
+            "total_duration_s": 103.312157,
+            "load_duration_s": 1.4192696,
+            "prompt_eval_duration_s": 0.44799,
+            "eval_duration_s": 101.40097,
+            "prompt_eval_count": 2468,
+            "eval_count": 383,
+            "done_reason": "stop"
+          },
+          "output_tokens": 383,
+          "tokens_per_sec": 3.7770841837114575,
+          "structured_plan_produced": true,
+          "tool_names": [
+            "drop_column",
+            "drop_column",
+            "encode_categorical_features",
+            "impute_missing_values",
+            "scale_features"
+          ],
+          "tool_arguments": [
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "PassengerId"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            },
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare"
+                ]
+              }
+            }
+          ],
+          "validation_passed": true,
+          "validation_violation_count": 0,
+          "validation_errors": [],
+          "failure_category": null,
+          "failure_details": null
+        }
+      ],
+      "first_attempt_valid": true,
+      "final_plan_valid": true,
+      "replan_count": 0,
+      "duplicate_plan_triggered": false,
+      "time_to_valid_plan": 105.39655490001314,
+      "total_planning_latency": 105.39655490001314,
+      "total_generation_latency": 101.40097,
+      "total_prompt_processing_latency": 0.44799
+    },
+    {
+      "model": "qwen3.5:4b",
+      "trial_id": "qwen3.5:4b_trial3",
+      "cold_or_warm": "warm",
+      "residency_before": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "residency_after": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "model": "qwen3.5:4b",
+          "trial_id": "qwen3.5:4b_trial3",
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "warm",
+          "prompt_build_ms": 0.6361999840009958,
+          "request_total_ms": 18082.700700004352,
+          "wall_clock_over_600s": false,
+          "transport_error": null,
+          "parse_duration_ms": 0.09799998952075839,
+          "validation_duration_ms": 0.060699996538460255,
+          "parse_error": null,
+          "ollama_stats": {
+            "total_duration_s": 16.0193309,
+            "load_duration_s": 2.0114962,
+            "prompt_eval_duration_s": 0.348001,
+            "eval_duration_s": 13.607149,
+            "prompt_eval_count": 2468,
+            "eval_count": 54,
+            "done_reason": "stop"
+          },
+          "output_tokens": 54,
+          "tokens_per_sec": 3.9685021454530998,
+          "structured_plan_produced": true,
+          "tool_names": [
+            "encode_categorical_features"
+          ],
+          "tool_arguments": [
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            }
+          ],
+          "validation_passed": true,
+          "validation_violation_count": 0,
+          "validation_errors": [],
+          "failure_category": null,
+          "failure_details": null
+        }
+      ],
+      "first_attempt_valid": true,
+      "final_plan_valid": true,
+      "replan_count": 0,
+      "duplicate_plan_triggered": false,
+      "time_to_valid_plan": 18.082700700004352,
+      "total_planning_latency": 18.082700700004352,
+      "total_generation_latency": 13.607149,
+      "total_prompt_processing_latency": 0.348001
+    }
+  ]
+}

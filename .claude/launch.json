@@ -1,0 +1,21 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "piper-backend",
+      "runtimeExecutable": "C:\\dev\\PIPER\\.venv\\Scripts\\python.exe",
+      "runtimeArgs": [
+        "-m", "uvicorn", "app.main:app",
+        "--app-dir", "C:\\dev\\PIPER\\backend",
+        "--host", "127.0.0.1", "--port", "8000"
+      ],
+      "port": 8000
+    },
+    {
+      "name": "piper-frontend",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["--prefix", "C:\\dev\\PIPER\\frontend", "run", "dev"],
+      "port": 5173
+    }
+  ]
+}

@@ -1,0 +1,41 @@
+# M1 scope only: deterministic tools + schemas + tests
+# LangGraph, FastAPI, SSE, and any LLM client are intentionally NOT
+# included yet — they belong to M2+ per the locked build order.
+#
+# Versions pinned to what was actually verified working (profiling
+# tools tested end-to-end against these exact versions), not
+# originally-guessed versions. pandas 3.0.2 uses a native string
+# dtype by default instead of the legacy object dtype for text
+# columns — app/agent/tools/_profiling_helpers.py is written to
+# handle both, so this is a known, already-handled behavior change,
+# not an open risk.
+
+pandas==3.0.2
+scikit-learn==1.8.0
+pydantic==2.13.4
+pytest==9.1.1
+
+# M2: LangGraph skeleton
+langgraph==1.2.10
+
+# M5 (Batch 2): FastAPI backend layer — exposes the existing agent
+# core over HTTP/SSE; introduces no new agent/ML logic. Versions
+# pinned to what was actually installed and verified working (`pip
+# install` resolved these against the pins above with no conflicts).
+# httpx is required by fastapi.testclient.TestClient (used in
+# tests/test_api_*.py), not by the app itself at runtime.
+fastapi==0.141.1
+uvicorn==0.52.1
+python-multipart==0.0.32
+httpx==0.28.1
+
+# Multi-format dataset ingestion (Excel / Parquet). CSV, TSV, JSON, and
+# IPYNB need no extra dependency — pandas' own csv/json readers and the
+# stdlib `json` module cover those. Versions pinned to what was actually
+# installed and verified working against the pins above.
+#   openpyxl -> .xlsx (pandas' engine for the modern Excel format)
+#   xlrd     -> .xls  (legacy Excel; openpyxl cannot read this format)
+#   pyarrow  -> .parquet (also what preserves Parquet's column types)
+openpyxl==3.1.5
+xlrd==2.0.2
+pyarrow==25.0.1

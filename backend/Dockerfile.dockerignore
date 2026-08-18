@@ -1,0 +1,16 @@
+# Applies specifically to `docker build -f backend/Dockerfile .` (build
+# context is the repo ROOT — see backend/Dockerfile's own comment for
+# why) — Docker's per-Dockerfile ignore-file convention
+# (<dockerfile>.dockerignore), picked so this doesn't have to be one
+# giant ignore file shared with the unrelated frontend build. Patterns
+# are relative to the repo root, the actual build context.
+.git/
+.venv/
+venv/
+**/__pycache__/
+**/*.pyc
+.pytest_cache/
+backend/tests/
+frontend/
+data/processed/
+*.md
