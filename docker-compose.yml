@@ -1,0 +1,60 @@
+# PIPER — Batch 4 Dockerization.
+#
+# Two services only: backend (FastAPI) and frontend (static build,
+# served by nginx). Deliberately NO Ollama service/container — PIPER
+# connects to the Ollama instance already running on the Windows host,
+# via Docker Desktop's host.docker.internal, exactly as CLAUDE.md's
+# Dockerization plan specifies ("keep Ollama outside Docker
+# initially"). No database container either — every store is in-memory
+# (matches the rest of this project; nothing here changes that).
+#
+# Usage:
+#   docker compose up --build
+#   -> frontend: http://localhost:5173
+#   -> backend:  http://localhost:8000  (docs at /docs, health at /health)
+#
+# Prerequisite: Ollama must already be running on the host (outside
+# Docker) at the default port 11434, with the model PIPER_LLM_MODEL
+# names (default qwen3:4b) pulled — e.g. `ollama serve` / `ollama pull
+# qwen3:4b` on the host, same as running the backend directly with
+# uvicorn. Override any of the environment variables below (e.g. in a
+# root .env file, which docker compose loads automatically) without
+# editing this file.
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    image: piper-backend
+    ports:
+      - "${PIPER_BACKEND_PORT:-8000}:8000"
+    environment:
+      PIPER_OLLAMA_HOST: ${PIPER_OLLAMA_HOST:-http://host.docker.internal:11434}
+      PIPER_LLM_MODEL: ${PIPER_LLM_MODEL:-qwen3:4b}
+      PIPER_OLLAMA_TIMEOUT_SECONDS: ${PIPER_OLLAMA_TIMEOUT_SECONDS:-600.0}
+      PIPER_OLLAMA_KEEP_ALIVE: ${PIPER_OLLAMA_KEEP_ALIVE:-10m}
+      PIPER_CORS_ORIGINS: ${PIPER_CORS_ORIGINS:-http://localhost:5173,http://127.0.0.1:5173}
+    extra_hosts:
+      # No-op on Docker Desktop (host.docker.internal already resolves
+      # there) — present for portability to Linux Docker engines, where
+      # this mapping is required for the same hostname to work.
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+      args:
+        # Must be a URL the user's BROWSER can reach (the backend's
+        # host-published port), not a Docker-internal service name —
+        # see frontend/Dockerfile's own comment for why.
+        VITE_API_BASE_URL: ${PIPER_PUBLIC_BACKEND_URL:-http://localhost:8000}
+    image: piper-frontend
+    ports:
+      - "${PIPER_FRONTEND_PORT:-5173}:80"
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped

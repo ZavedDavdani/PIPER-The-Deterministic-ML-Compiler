@@ -1,0 +1,86 @@
+{
+  "experiment": "adequacy_recovery_v2",
+  "timestamp_utc": "2026-08-14T16:16:09.495389+00:00",
+  "dataset_sha256": "7d118fef8b6ccf7f81111877bc388536f7b1e498a655e3d649d19aaa010e9f6f",
+  "dataset_shape": [
+    891,
+    12
+  ],
+  "prompt_sha256": "4e62fdd7486a6ed6a8bb04927aff9a26b5fc84046a6ada34c972392e5aa72297",
+  "tool_schema_sha256": "bbe23dd150f4d290d7079a43313be5094c0708a3f7512bff66455ef90bcd5ccf",
+  "keep_alive": "10m",
+  "timeout_seconds": 600.0,
+  "max_retries": 2,
+  "models": [
+    "qwen3:4b",
+    "qwen3.5:4b"
+  ],
+  "execution_order": [
+    "qwen3:4b",
+    "qwen3.5:4b"
+  ],
+  "n_trials_per_model": 3,
+  "note": "Each model runs on its OWN shipped sampling defaults; PIPER sends no options field.",
+  "model_default_parameters": {
+    "qwen3:4b": {
+      "top_k": "20",
+      "top_p": "0.95",
+      "repeat_penalty": "1",
+      "stop": [
+        "\"<|im_start|>\"",
+        "\"<|im_end|>\""
+      ],
+      "temperature": "0.6"
+    },
+    "qwen3.5:4b": {
+      "presence_penalty": "1.5",
+      "temperature": "1",
+      "top_k": "20",
+      "top_p": "0.95"
+    }
+  }
+}
+
+========================================================================
+BLOCK: qwen3:4b
+========================================================================
+evicted; ollama ps = []
+
+-- qwen3:4b_trial1 (COLD) --
+   state=cold calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=parsing struct_valid=None adequacy=None cat=EVALUATION_ERROR steps=None
+      attempt1: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+
+-- qwen3:4b_trial2 (warm) --
+   state=warm calls=2 first_adequate=False final=True outcome=SUCCESSFUL_PATCH ttx=490.57171910000034
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt1: stage=pass struct_valid=True adequacy=PASS cat=None steps=4
+
+-- qwen3:4b_trial3 (warm) --
+   state=warm calls=2 first_adequate=False final=True outcome=SUCCESSFUL_PATCH ttx=323.3641876999991
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=4
+      attempt1: stage=pass struct_valid=True adequacy=PASS cat=None steps=3
+
+========================================================================
+BLOCK: qwen3.5:4b
+========================================================================
+evicted; ollama ps = []
+
+-- qwen3.5:4b_trial1 (COLD) --
+   state=cold calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=5
+      attempt1: stage=parsing struct_valid=None adequacy=None cat=EVALUATION_ERROR steps=None
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=3
+
+-- qwen3.5:4b_trial2 (warm) --
+   state=warm calls=1 first_adequate=True final=True outcome=FIRST_ATTEMPT_PASS ttx=67.81724940000095
+      attempt0: stage=pass struct_valid=True adequacy=PASS cat=None steps=4
+
+-- qwen3.5:4b_trial3 (warm) --
+   state=warm calls=3 first_adequate=False final=False outcome=BUDGET_EXHAUSTION ttx=None
+      attempt0: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=3
+      attempt1: stage=parsing struct_valid=None adequacy=None cat=EVALUATION_ERROR steps=None
+      attempt2: stage=adequacy struct_valid=True adequacy=FAIL cat=PLAN_ADEQUACY steps=3
+
+Wrote C:\dev\PIPER\backend\benchmark_results\adequacy_recovery_v2\raw_results.json

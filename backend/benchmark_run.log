@@ -1,0 +1,70 @@
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_id" in TrainingResult has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_id" in EvaluationResult has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_id" in ModelComparisonEntry has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_id" in BaselineComparisonResult has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_primary_metric_value" in BaselineComparisonResult has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_random_state" in ReproducibilityMetadata has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_results" in AgentState has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_id" in ModelArtifactMetadata has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_id" in EvaluationExplanation has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_selection" in RunExplanation has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+C:\Users\zaved\AppData\Local\Programs\Python\Python311\Lib\site-packages\pydantic\_internal\_fields.py:132: UserWarning: Field "model_candidates" in CanonicalPlan has conflict with protected namespace "model_".
+
+You may be able to resolve this warning by setting `model_config['protected_namespaces'] = ()`.
+  warnings.warn(
+Loading benchmark dataset from C:\dev\PIPER\benchmark_data\train.csv
+Loaded: 891 rows x 12 columns, target='Survived'
+Context prep: sanitize=27.5ms, budget=0.4ms
+Context budgeting: {'original_size_chars': 2780, 'final_size_chars': 2780, 'budget_chars': 8000, 'reduction_applied': False, 'sample_values_cap_used': 5}
+
+Installed Ollama models: ['nomic-embed-text:latest', 'qwen3:4b']
+
+=== Benchmarking qwen3:4b ===
+  [qwen3:4b] running first_attempt_0 ...
+    -> 1572.5s wall, structured_plan=False, valid=None
+  [qwen3:4b] running first_attempt_1 ...
+    -> 125.4s wall, structured_plan=True, valid=False
+  [qwen3:4b] running replan_after_first_attempt_1 ...
+    -> 165.8s wall, structured_plan=True, valid=False
+  [qwen3:4b] running first_attempt_2 ...
+    -> 143.4s wall, structured_plan=True, valid=False
+  [qwen3:4b] running replan_after_first_attempt_2 ...
+    -> 151.1s wall, structured_plan=True, valid=False
+
+=== qwen3.5:4b: UNAVAILABLE (not installed, not auto-downloading) ===
+
+=== llama3.2:3b: UNAVAILABLE (not installed, not auto-downloading) ===
+
+=== gemma3:4b: UNAVAILABLE (not installed, not auto-downloading) ===
+
+Full results written to C:\dev\PIPER\backend\benchmark_results.json

@@ -1,0 +1,977 @@
+{
+  "model": "qwen3:4b",
+  "trials": [
+    {
+      "trial_id": "qwen3:4b_trial1",
+      "model": "qwen3:4b",
+      "cold_or_warm": "cold",
+      "residency_before": [],
+      "residency_after": [
+        {
+          "name": "qwen3:4b",
+          "raw": "qwen3:4b    359d7dd4bcda    3.2 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "cold",
+          "prompt_chars": 8068,
+          "wall_seconds": 618.4608095000003,
+          "wall_clock_over_timeout": true,
+          "transport_error": "TimeoutError: timed out",
+          "ollama_stats": {},
+          "stage_reached": "parsing",
+          "structural_valid": null,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": null,
+          "adequacy_material_failure": null,
+          "adequacy_findings": [],
+          "valid_steps": [],
+          "implicated_steps": [],
+          "proposed_steps": [],
+          "failure_category": "EVALUATION_ERROR",
+          "parse_error": null
+        },
+        {
+          "attempt_number": 1,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 9026,
+          "wall_seconds": 153.99559170000066,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 151.9065197,
+            "load_duration_s": 1.0166516,
+            "prompt_eval_duration_s": 14.701217,
+            "eval_duration_s": 136.146954,
+            "prompt_eval_count": 2572,
+            "eval_count": 437,
+            "tokens_per_sec": 3.209766999267571
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values.",
+              "reason": "The plan dropped 'Cabin', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "valid_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Cabin"
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare",
+                  "SibSp",
+                  "Parch"
+                ]
+              }
+            }
+          ],
+          "implicated_steps": [
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              },
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Cabin"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare",
+                  "SibSp",
+                  "Parch"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 5,
+          "plan_hash": "d89f6ee4e910d3dee750b38f8eef7780feb2a2477a7c0688de96e871f2e4955f"
+        },
+        {
+          "attempt_number": 2,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 12688,
+          "wall_seconds": 239.6112882999987,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 237.5586946,
+            "load_duration_s": 0.6476572,
+            "prompt_eval_duration_s": 96.009347,
+            "eval_duration_s": 140.84371,
+            "prompt_eval_count": 3424,
+            "eval_count": 372,
+            "tokens_per_sec": 2.641225511597217
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values.",
+              "reason": "The plan dropped 'Cabin', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "valid_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Cabin"
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare",
+                  "SibSp",
+                  "Parch"
+                ]
+              }
+            }
+          ],
+          "implicated_steps": [
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              },
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Cabin"
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare",
+                  "SibSp",
+                  "Parch"
+                ]
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 5,
+          "plan_hash": "017aee1a94e6dc211a76511bc5901967da694b4321e7b0ee4d6aeb65e3b6dfaf"
+        }
+      ],
+      "llm_calls": 3,
+      "replan_calls": 2,
+      "adequacy_failures": 2,
+      "structural_failures": 0,
+      "duplicate_terminations": 0,
+      "first_attempt_structurally_valid": null,
+      "first_attempt_adequate": false,
+      "final_executable": false,
+      "time_to_executable_plan": null,
+      "total_planning_latency": 1012.0676894999997,
+      "total_generation_latency": 276.990664,
+      "total_prompt_processing_latency": 110.710564,
+      "outcome": "BUDGET_EXHAUSTION",
+      "terminal_category": "PLAN_ADEQUACY"
+    },
+    {
+      "trial_id": "qwen3:4b_trial2",
+      "model": "qwen3:4b",
+      "cold_or_warm": "warm",
+      "residency_before": [
+        {
+          "name": "qwen3:4b",
+          "raw": "qwen3:4b    359d7dd4bcda    3.2 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "residency_after": [
+        {
+          "name": "qwen3:4b",
+          "raw": "qwen3:4b    359d7dd4bcda    3.2 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "warm",
+          "prompt_chars": 8068,
+          "wall_seconds": 141.37974329999997,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 139.3094122,
+            "load_duration_s": 0.6612263,
+            "prompt_eval_duration_s": 6.826818,
+            "eval_duration_s": 131.781227,
+            "prompt_eval_count": 2247,
+            "eval_count": 431,
+            "tokens_per_sec": 3.270572067142765
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "'Cabin' is not named by any encode or scale step, so it is silently excluded from the training matrix by train_model()'s ColumnTransformer(remainder='drop'). It cannot crash either estimator or silently encode missingness as a feature. This is advisory: the LLM may choose to explicitly drop or impute it, but is not required to."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "valid_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare"
+                ]
+              }
+            }
+          ],
+          "implicated_steps": [
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              },
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 5,
+          "plan_hash": "98bb803743e9e4f8ab96f7f42001d5ff3b1d8b1264c131a5a24618b2a7d1a2c8"
+        },
+        {
+          "attempt_number": 1,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 13195,
+          "wall_seconds": 349.19197580000036,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 347.0891832,
+            "load_duration_s": 0.646107,
+            "prompt_eval_duration_s": 99.391738,
+            "eval_duration_s": 247.007394,
+            "prompt_eval_count": 3538,
+            "eval_count": 323,
+            "tokens_per_sec": 1.3076531628037014
+          },
+          "stage_reached": "pass",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "PASS",
+          "adequacy_material_failure": false,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "'Cabin' is not named by any encode or scale step, so it is silently excluded from the training matrix by train_model()'s ColumnTransformer(remainder='drop'). It cannot crash either estimator or silently encode missingness as a feature. This is advisory: the LLM may choose to explicitly drop or impute it, but is not required to."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "'Embarked' is not named by any encode or scale step, so it is silently excluded from the training matrix by train_model()'s ColumnTransformer(remainder='drop'). It cannot crash either estimator or silently encode missingness as a feature. This is advisory: the LLM may choose to explicitly drop or impute it, but is not required to."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "valid_steps": [],
+          "implicated_steps": [],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            },
+            {
+              "tool_name": "scale_features",
+              "arguments": {
+                "columns": [
+                  "Age",
+                  "Fare"
+                ]
+              }
+            }
+          ],
+          "failure_category": null,
+          "parse_error": null,
+          "step_count": 4,
+          "plan_hash": "f7c829e56b2117de53534c1214936eca5e6cc974f5b240c52006c87386244ab9"
+        }
+      ],
+      "llm_calls": 2,
+      "replan_calls": 1,
+      "adequacy_failures": 1,
+      "structural_failures": 0,
+      "duplicate_terminations": 0,
+      "first_attempt_structurally_valid": true,
+      "first_attempt_adequate": false,
+      "final_executable": true,
+      "time_to_executable_plan": 490.57171910000034,
+      "total_planning_latency": 490.57171910000034,
+      "total_generation_latency": 378.78862100000003,
+      "total_prompt_processing_latency": 106.218556,
+      "outcome": "SUCCESSFUL_PATCH",
+      "terminal_category": null
+    },
+    {
+      "trial_id": "qwen3:4b_trial3",
+      "model": "qwen3:4b",
+      "cold_or_warm": "warm",
+      "residency_before": [
+        {
+          "name": "qwen3:4b",
+          "raw": "qwen3:4b    359d7dd4bcda    3.2 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "residency_after": [
+        {
+          "name": "qwen3:4b",
+          "raw": "qwen3:4b    359d7dd4bcda    3.2 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "warm",
+          "prompt_chars": 8068,
+          "wall_seconds": 118.27107469999828,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 116.2222167,
+            "load_duration_s": 0.6813567,
+            "prompt_eval_duration_s": 6.881479,
+            "eval_duration_s": 108.626518,
+            "prompt_eval_count": 2247,
+            "eval_count": 359,
+            "tokens_per_sec": 3.3049020313805877
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "'Cabin' is not named by any encode or scale step, so it is silently excluded from the training matrix by train_model()'s ColumnTransformer(remainder='drop'). It cannot crash either estimator or silently encode missingness as a feature. This is advisory: the LLM may choose to explicitly drop or impute it, but is not required to."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "valid_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            }
+          ],
+          "implicated_steps": [
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              },
+              "reason": "'Embarked' is used as a training feature (named in an encode or scale step), so its missing values would reach the training matrix. PIPER V1 trains both LogisticRegression and RandomForestClassifier \u2014 LogisticRegression raises ValueError on NaN inputs; even for RandomForest, allowing NaN to enter a scaled feature is a silent, unintentional choice rather than a deliberate one."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 4,
+          "plan_hash": "9b485d639f052623cdcaf44993e11d026a61e38080d16057c1558dbf1cab3f5b"
+        },
+        {
+          "attempt_number": 1,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 12745,
+          "wall_seconds": 205.0931130000008,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 203.0107373,
+            "load_duration_s": 0.6998166,
+            "prompt_eval_duration_s": 108.437489,
+            "eval_duration_s": 93.802458,
+            "prompt_eval_count": 3430,
+            "eval_count": 247,
+            "tokens_per_sec": 2.633193258112703
+          },
+          "stage_reached": "pass",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "PASS",
+          "adequacy_material_failure": false,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "'Cabin' is not named by any encode or scale step, so it is silently excluded from the training matrix by train_model()'s ColumnTransformer(remainder='drop'). It cannot crash either estimator or silently encode missingness as a feature. This is advisory: the LLM may choose to explicitly drop or impute it, but is not required to."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "'Embarked' is not named by any encode or scale step, so it is silently excluded from the training matrix by train_model()'s ColumnTransformer(remainder='drop'). It cannot crash either estimator or silently encode missingness as a feature. This is advisory: the LLM may choose to explicitly drop or impute it, but is not required to."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "valid_steps": [],
+          "implicated_steps": [],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            }
+          ],
+          "failure_category": null,
+          "parse_error": null,
+          "step_count": 3,
+          "plan_hash": "b196eaee4a2bf0df1e11c09da53c1a5c6130ae74c0204c0b1f15970202cec21a"
+        }
+      ],
+      "llm_calls": 2,
+      "replan_calls": 1,
+      "adequacy_failures": 1,
+      "structural_failures": 0,
+      "duplicate_terminations": 0,
+      "first_attempt_structurally_valid": true,
+      "first_attempt_adequate": false,
+      "final_executable": true,
+      "time_to_executable_plan": 323.3641876999991,
+      "total_planning_latency": 323.3641876999991,
+      "total_generation_latency": 202.428976,
+      "total_prompt_processing_latency": 115.318968,
+      "outcome": "SUCCESSFUL_PATCH",
+      "terminal_category": null
+    }
+  ]
+}

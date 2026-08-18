@@ -1,0 +1,94 @@
+
+
+
+
+
+
+
+
+
+
+
+Dataset verified: (891, 12), target=Survived, sha256=7d118fef8b6ccf7f...
+Both models confirmed installed: ['qwen3:4b', 'qwen3.5:4b']
+Shared prompt verified: 8068 chars, sha256=4e62fdd7486a6ed6...
+Tool-schema sha256=bbe23dd150f4d290...
+Ollama version: ollama version is 0.32.9
+keep_alive='10m' timeout=600.0s max_retries=2
+{
+  "benchmark_version": "post_contract_v1",
+  "dataset_sha256": "7d118fef8b6ccf7f81111877bc388536f7b1e498a655e3d649d19aaa010e9f6f",
+  "prompt_sha256": "4e62fdd7486a6ed6a8bb04927aff9a26b5fc84046a6ada34c972392e5aa72297",
+  "tool_schema_sha256": "bbe23dd150f4d290d7079a43313be5094c0708a3f7512bff66455ef90bcd5ccf",
+  "ollama_version": "ollama version is 0.32.9",
+  "keep_alive": "10m",
+  "timeout_seconds": 600.0,
+  "max_retries": 2,
+  "n_trials_per_model": 3,
+  "timestamp_utc": "2026-08-14T09:07:42.820105+00:00",
+  "models": [
+    "qwen3:4b",
+    "qwen3.5:4b"
+  ],
+  "execution_order": [
+    "qwen3:4b",
+    "qwen3.5:4b"
+  ],
+  "sampling_config_policy": "Each model runs on its OWN embedded defaults; PIPER sends no `options` field, so this is production-realistic. These defaults DIFFER between candidates (see model_default_parameters) \u2014 a documented confound: any observed difference is attributable to model+shipped-sampling-config jointly, not to model capability in isolation.",
+  "model_default_parameters": {
+    "qwen3:4b": {
+      "repeat_penalty": "1",
+      "stop": [
+        "\"<|im_start|>\"",
+        "\"<|im_end|>\""
+      ],
+      "temperature": "0.6",
+      "top_k": "20",
+      "top_p": "0.95"
+    },
+    "qwen3.5:4b": {
+      "presence_penalty": "1.5",
+      "temperature": "1",
+      "top_k": "20",
+      "top_p": "0.95"
+    }
+  }
+}
+
+======================================================================
+BLOCK: qwen3:4b
+======================================================================
+-- evicting all resident models --
+ollama ps after evict-all: []
+-- forcing qwen3:4b cold --
+ollama ps before Trial 1: resident=False -> []
+
+-- Trial 1 (intended COLD) --
+   -> actual_state=cold attempts=1 first_attempt_valid=True final_valid=True time_to_valid=302.8838834000053 wall=303.2s
+
+-- Trial 2 (intended WARM) --
+   -> actual_state=warm attempts=1 first_attempt_valid=True final_valid=True time_to_valid=271.5939595999953 wall=271.9s
+
+-- Trial 3 (intended WARM) --
+   -> actual_state=warm attempts=1 first_attempt_valid=True final_valid=True time_to_valid=128.94612689997302 wall=129.3s
+Wrote C:\dev\PIPER\backend\benchmark_results\post_contract\qwen3_4b.json
+
+======================================================================
+BLOCK: qwen3.5:4b
+======================================================================
+-- evicting all resident models --
+ollama ps after evict-all: []
+-- forcing qwen3.5:4b cold --
+ollama ps before Trial 1: resident=False -> []
+
+-- Trial 1 (intended COLD) --
+   -> actual_state=cold attempts=1 first_attempt_valid=True final_valid=True time_to_valid=250.6640910000133 wall=251.0s
+
+-- Trial 2 (intended WARM) --
+   -> actual_state=warm attempts=1 first_attempt_valid=True final_valid=True time_to_valid=105.39655490001314 wall=105.8s
+
+-- Trial 3 (intended WARM) --
+   -> actual_state=warm attempts=1 first_attempt_valid=True final_valid=True time_to_valid=18.082700700004352 wall=18.5s
+Wrote C:\dev\PIPER\backend\benchmark_results\post_contract\qwen3.5_4b.json
+
+Wrote C:\dev\PIPER\backend\benchmark_results\post_contract\raw_results.json

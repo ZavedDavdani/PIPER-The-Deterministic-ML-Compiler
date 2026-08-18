@@ -1,0 +1,30 @@
+{
+  "n_trials": 10,
+  "successful_trials": 2,
+  "overall_reliability": 0.2,
+  "first_attempt_structural_validity_rate": 0.9,
+  "first_attempt_adequacy_rate": 0.0,
+  "final_executable_plan_rate": 0.9,
+  "replan_rate": 1.0,
+  "replan_recovery_rate": 0.2,
+  "duplicate_plan_rate": 0.1,
+  "schema_failure_rate": 0.2,
+  "adequacy_failure_rate": 0.4,
+  "parse_failure_rate": 0.0,
+  "end_to_end_completion_rate": 0.2,
+  "average_attempts_per_trial": 2.8,
+  "planning_latency": {
+    "mean_seconds": 6878.926667642593,
+    "median_seconds": 888.7744554281235,
+    "min_seconds": 530.5868408679962,
+    "max_seconds": 59679.47650098801
+  },
+  "wall_time": {
+    "mean_seconds": 6884.322723674774,
+    "median_seconds": 891.0191670656204,
+    "min_seconds": 532.2470669746399,
+    "max_seconds": 59682.50877904892
+  },
+  "reliability_classification": "NOT RELIABLE",
+  "decision": "V1 RELIABILITY NOT ACCEPTED"
+}

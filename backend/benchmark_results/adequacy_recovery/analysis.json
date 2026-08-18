@@ -1,0 +1,89 @@
+{
+  "experiment": "adequacy_recovery_v1",
+  "fingerprint": {
+    "experiment": "adequacy_recovery_v1",
+    "timestamp_utc": "2026-08-14T11:11:53.951624+00:00",
+    "dataset_sha256": "7d118fef8b6ccf7f81111877bc388536f7b1e498a655e3d649d19aaa010e9f6f",
+    "dataset_shape": [
+      891,
+      12
+    ],
+    "prompt_sha256": "4e62fdd7486a6ed6a8bb04927aff9a26b5fc84046a6ada34c972392e5aa72297",
+    "tool_schema_sha256": "bbe23dd150f4d290d7079a43313be5094c0708a3f7512bff66455ef90bcd5ccf",
+    "keep_alive": "10m",
+    "timeout_seconds": 600.0,
+    "max_retries": 2,
+    "models": [
+      "qwen3:4b",
+      "qwen3.5:4b"
+    ],
+    "execution_order": [
+      "qwen3:4b",
+      "qwen3.5:4b"
+    ],
+    "n_trials_per_model": 3,
+    "note": "Each model runs on its OWN shipped sampling defaults; PIPER sends no options field."
+  },
+  "per_model": {
+    "qwen3:4b": {
+      "trials": 3,
+      "first_attempt_structurally_valid": "3/3",
+      "first_attempt_adequate": "0/3",
+      "final_adequate": "0/3",
+      "trials_entering_replan": 3,
+      "mean_replan_count": 2,
+      "outcomes": {
+        "BUDGET_EXHAUSTION": 3
+      },
+      "llm_calls": 9,
+      "mean_total_planning_latency_s": 1601.8,
+      "mean_generation_latency_s": 1118.2,
+      "attempt0_mean_wall_s": 808.5,
+      "replan_mean_wall_s": 396.7,
+      "replan_tax_s": 2379.9,
+      "time_to_executable_plan_s": null
+    },
+    "qwen3.5:4b": {
+      "trials": 3,
+      "first_attempt_structurally_valid": "3/3",
+      "first_attempt_adequate": "0/3",
+      "final_adequate": "1/3",
+      "trials_entering_replan": 3,
+      "mean_replan_count": 2,
+      "outcomes": {
+        "BUDGET_EXHAUSTION": 2,
+        "SUCCESSFUL_PATCH": 1
+      },
+      "llm_calls": 9,
+      "mean_total_planning_latency_s": 838.3,
+      "mean_generation_latency_s": 207.0,
+      "attempt0_mean_wall_s": 114.3,
+      "replan_mean_wall_s": 362.0,
+      "replan_tax_s": 2171.9,
+      "time_to_executable_plan_s": [
+        581.4
+      ]
+    }
+  },
+  "aggregate": {
+    "total_attempts": 18,
+    "structurally_valid_attempts": "18/18",
+    "adequacy_pass_attempts": "1/18",
+    "duplicate_plan_walls": 0,
+    "parse_or_transport_failures": 0,
+    "attempts_over_600s_wall": 5,
+    "outcomes": {
+      "BUDGET_EXHAUSTION": 5,
+      "SUCCESSFUL_PATCH": 1
+    },
+    "replan_attempts": 12,
+    "replans_fixing_all_reported_columns": "10/12",
+    "replans_regressing_a_prior_fix": "10/12",
+    "material_missing_findings_in_feature_set": 8,
+    "material_missing_findings_not_in_feature_set": 17,
+    "attempts_materially_failed": 17,
+    "attempts_blocked_only_by_non_feature_columns": 9,
+    "attempts_blocked_by_a_real_feature_column": 8,
+    "calls_per_successful_plan": 18
+  }
+}

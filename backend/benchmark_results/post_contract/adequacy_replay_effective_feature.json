@@ -1,0 +1,258 @@
+{
+  "old_material_finding_count": 13,
+  "new_material_finding_count": 6,
+  "false_positive_findings_removed": 7,
+  "plans_changed_status": 0,
+  "plans_now_passing": 0,
+  "trials": [
+    {
+      "model": "qwen3:4b",
+      "trial": "qwen3:4b_trial1",
+      "steps": 5,
+      "effective_feature_set": [
+        "Age",
+        "Embarked",
+        "Fare",
+        "Sex"
+      ],
+      "previous_adequacy_status": "FAIL",
+      "adequacy_status": "FAIL",
+      "changed": false,
+      "material_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Embarked"
+          ],
+          "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "advisory_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Cabin"
+          ],
+          "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "not_applicable_findings": [],
+      "old_material_columns": [
+        "Cabin",
+        "Embarked"
+      ]
+    },
+    {
+      "model": "qwen3:4b",
+      "trial": "qwen3:4b_trial2",
+      "steps": 5,
+      "effective_feature_set": [
+        "Age",
+        "Embarked",
+        "Fare",
+        "Parch",
+        "Sex",
+        "SibSp"
+      ],
+      "previous_adequacy_status": "FAIL",
+      "adequacy_status": "FAIL",
+      "changed": false,
+      "material_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Embarked"
+          ],
+          "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "advisory_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Cabin"
+          ],
+          "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "not_applicable_findings": [],
+      "old_material_columns": [
+        "Cabin",
+        "Embarked"
+      ]
+    },
+    {
+      "model": "qwen3:4b",
+      "trial": "qwen3:4b_trial3",
+      "steps": 5,
+      "effective_feature_set": [
+        "Age",
+        "Embarked",
+        "Fare",
+        "Sex"
+      ],
+      "previous_adequacy_status": "FAIL",
+      "adequacy_status": "FAIL",
+      "changed": false,
+      "material_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Embarked"
+          ],
+          "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "advisory_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Cabin"
+          ],
+          "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "not_applicable_findings": [],
+      "old_material_columns": [
+        "Cabin",
+        "Embarked"
+      ]
+    },
+    {
+      "model": "qwen3.5:4b",
+      "trial": "qwen3.5:4b_trial1",
+      "steps": 3,
+      "effective_feature_set": [
+        "Embarked",
+        "Sex"
+      ],
+      "previous_adequacy_status": "FAIL",
+      "adequacy_status": "FAIL",
+      "changed": false,
+      "material_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Embarked"
+          ],
+          "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "advisory_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Cabin"
+          ],
+          "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it."
+        },
+        {
+          "condition": "identifier_like_column",
+          "columns": [
+            "Name"
+          ],
+          "evidence": "'Name' is 100.0% unique (non-numeric)."
+        }
+      ],
+      "not_applicable_findings": [],
+      "old_material_columns": [
+        "Cabin",
+        "Embarked"
+      ]
+    },
+    {
+      "model": "qwen3.5:4b",
+      "trial": "qwen3.5:4b_trial2",
+      "steps": 5,
+      "effective_feature_set": [
+        "Age",
+        "Embarked",
+        "Fare",
+        "Sex"
+      ],
+      "previous_adequacy_status": "FAIL",
+      "adequacy_status": "FAIL",
+      "changed": false,
+      "material_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Embarked"
+          ],
+          "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "advisory_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Cabin"
+          ],
+          "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it."
+        },
+        {
+          "condition": "identifier_like_column",
+          "columns": [
+            "Name"
+          ],
+          "evidence": "'Name' is 100.0% unique (non-numeric)."
+        }
+      ],
+      "not_applicable_findings": [],
+      "old_material_columns": [
+        "Cabin",
+        "Embarked"
+      ]
+    },
+    {
+      "model": "qwen3.5:4b",
+      "trial": "qwen3.5:4b_trial3",
+      "steps": 1,
+      "effective_feature_set": [
+        "Embarked",
+        "Sex"
+      ],
+      "previous_adequacy_status": "FAIL",
+      "adequacy_status": "FAIL",
+      "changed": false,
+      "material_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Embarked"
+          ],
+          "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it."
+        }
+      ],
+      "advisory_findings": [
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Age"
+          ],
+          "evidence": "'Age' has 19.87% missing values, and no plan step imputes or drops it."
+        },
+        {
+          "condition": "missing_values",
+          "columns": [
+            "Cabin"
+          ],
+          "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it."
+        },
+        {
+          "condition": "identifier_like_column",
+          "columns": [
+            "Name"
+          ],
+          "evidence": "'Name' is 100.0% unique (non-numeric)."
+        }
+      ],
+      "not_applicable_findings": [],
+      "old_material_columns": [
+        "Age",
+        "Cabin",
+        "Embarked"
+      ]
+    }
+  ]
+}

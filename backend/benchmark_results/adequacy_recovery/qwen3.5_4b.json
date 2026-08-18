@@ -1,0 +1,1042 @@
+{
+  "model": "qwen3.5:4b",
+  "trials": [
+    {
+      "trial_id": "qwen3.5:4b_trial1",
+      "model": "qwen3.5:4b",
+      "cold_or_warm": "cold",
+      "residency_before": [],
+      "residency_after": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "cold",
+          "prompt_chars": 8068,
+          "wall_seconds": 166.0199364,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 163.9426205,
+            "load_duration_s": 16.2012474,
+            "prompt_eval_duration_s": 123.448859,
+            "eval_duration_s": 24.195662,
+            "prompt_eval_count": 2468,
+            "eval_count": 99,
+            "tokens_per_sec": 4.09164254319638
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Cabin' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Embarked' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "'Name' looks identifier-like and the plan does not drop it. This is advisory only: it does not violate a V1 execution invariant, and retaining such a column can be legitimate, so it never blocks execution on its own."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 2,
+          "plan_hash": "9f13f21e51a06ffc4971eb5870c227993e2f5627f4a069cc1138ff7deae286a5"
+        },
+        {
+          "attempt_number": 1,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 11238,
+          "wall_seconds": 306.62846219999483,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 304.5333553,
+            "load_duration_s": 1.3907239,
+            "prompt_eval_duration_s": 238.986178,
+            "eval_duration_s": 64.035823,
+            "prompt_eval_count": 3379,
+            "eval_count": 241,
+            "tokens_per_sec": 3.7635184293641393
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Cabin' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values.",
+              "reason": "The plan imputed 'Embarked', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Embarked",
+                "strategy": "mode"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 3,
+          "plan_hash": "a6861df6b8f7711bac019265aa0e8c4374109ad38bccd294993be706e2e3aae5"
+        },
+        {
+          "attempt_number": 2,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 10193,
+          "wall_seconds": 114.64880330002052,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 112.5571871,
+            "load_duration_s": 1.5525808,
+            "prompt_eval_duration_s": 68.875655,
+            "eval_duration_s": 42.053761,
+            "prompt_eval_count": 3124,
+            "eval_count": 184,
+            "tokens_per_sec": 4.375351826439495
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Age' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values.",
+              "reason": "The plan imputed 'Cabin', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Embarked' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Cabin",
+                "strategy": "mode"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 2,
+          "plan_hash": "e74a87d4a2eeb5a700b5db6b97d39e2fcd22987f9facc1903b12ea309ee62e68"
+        }
+      ],
+      "llm_calls": 3,
+      "replan_calls": 2,
+      "adequacy_failures": 3,
+      "structural_failures": 0,
+      "duplicate_terminations": 0,
+      "first_attempt_structurally_valid": true,
+      "first_attempt_adequate": false,
+      "final_executable": false,
+      "time_to_executable_plan": null,
+      "total_planning_latency": 587.2972019000154,
+      "total_generation_latency": 130.285246,
+      "total_prompt_processing_latency": 431.31069199999996,
+      "outcome": "BUDGET_EXHAUSTION",
+      "terminal_category": "PLAN_ADEQUACY"
+    },
+    {
+      "trial_id": "qwen3.5:4b_trial2",
+      "model": "qwen3.5:4b",
+      "cold_or_warm": "warm",
+      "residency_before": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "residency_after": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "warm",
+          "prompt_chars": 8068,
+          "wall_seconds": 57.16028899999219,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 55.0828929,
+            "load_duration_s": 1.4234201,
+            "prompt_eval_duration_s": 27.393365,
+            "eval_duration_s": 26.210855,
+            "prompt_eval_count": 2468,
+            "eval_count": 121,
+            "tokens_per_sec": 4.616407972956243
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Cabin' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Embarked' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "'Name' looks identifier-like and the plan does not drop it. This is advisory only: it does not violate a V1 execution invariant, and retaining such a column can be legitimate, so it never blocks execution on its own."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 2,
+          "plan_hash": "9f13f21e51a06ffc4971eb5870c227993e2f5627f4a069cc1138ff7deae286a5"
+        },
+        {
+          "attempt_number": 1,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 11238,
+          "wall_seconds": 236.4305241999973,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 234.342279,
+            "load_duration_s": 1.0431003,
+            "prompt_eval_duration_s": 209.38885,
+            "eval_duration_s": 23.873438,
+            "prompt_eval_count": 3379,
+            "eval_count": 127,
+            "tokens_per_sec": 5.319719765540262
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Age' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values.",
+              "reason": "The plan imputed 'Cabin', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Embarked' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "'Name' looks identifier-like and the plan does not drop it. This is advisory only: it does not violate a V1 execution invariant, and retaining such a column can be legitimate, so it never blocks execution on its own."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Cabin",
+                "strategy": "median"
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 1,
+          "plan_hash": "ade394259a8d114decc5d714e1d5c2594461e2cb7a79a4d7432cd91d3fa8c0be"
+        },
+        {
+          "attempt_number": 2,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 11078,
+          "wall_seconds": 287.836856799986,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 285.7774504,
+            "load_duration_s": 1.3506336,
+            "prompt_eval_duration_s": 86.754016,
+            "eval_duration_s": 197.624099,
+            "prompt_eval_count": 3337,
+            "eval_count": 450,
+            "tokens_per_sec": 2.2770502295876374
+          },
+          "stage_reached": "pass",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "PASS",
+          "adequacy_material_failure": false,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values.",
+              "reason": "The plan imputed 'Cabin', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values.",
+              "reason": "The plan imputed 'Embarked', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "'Name' looks identifier-like and the plan does not drop it. This is advisory only: it does not violate a V1 execution invariant, and retaining such a column can be legitimate, so it never blocks execution on its own."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Embarked",
+                "strategy": "mode"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "PassengerId"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex"
+                ]
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex"
+                ]
+              }
+            },
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Cabin",
+                "strategy": "median"
+              }
+            }
+          ],
+          "failure_category": null,
+          "parse_error": null,
+          "step_count": 6,
+          "plan_hash": "e937445c40827d57bdd6dcf08993fe5832d5dab18d86633dff48f1625484bfc6"
+        }
+      ],
+      "llm_calls": 3,
+      "replan_calls": 2,
+      "adequacy_failures": 2,
+      "structural_failures": 0,
+      "duplicate_terminations": 0,
+      "first_attempt_structurally_valid": true,
+      "first_attempt_adequate": false,
+      "final_executable": true,
+      "time_to_executable_plan": 581.4276699999755,
+      "total_planning_latency": 581.4276699999755,
+      "total_generation_latency": 247.708392,
+      "total_prompt_processing_latency": 323.536231,
+      "outcome": "SUCCESSFUL_PATCH",
+      "terminal_category": null
+    },
+    {
+      "trial_id": "qwen3.5:4b_trial3",
+      "model": "qwen3.5:4b",
+      "cold_or_warm": "warm",
+      "residency_before": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "residency_after": [
+        {
+          "name": "qwen3.5:4b",
+          "raw": "qwen3.5:4b    2a654d98e6fb    3.1 GB    100% CPU     4096       9 minutes from now"
+        }
+      ],
+      "attempts": [
+        {
+          "attempt_number": 0,
+          "is_replan": false,
+          "cold_or_warm": "warm",
+          "prompt_chars": 8068,
+          "wall_seconds": 119.80824270000448,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 117.7175174,
+            "load_duration_s": 1.4765737,
+            "prompt_eval_duration_s": 24.524108,
+            "eval_duration_s": 91.672515,
+            "prompt_eval_count": 2468,
+            "eval_count": 365,
+            "tokens_per_sec": 3.9815641580248995
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values.",
+              "reason": "The plan imputed 'Cabin', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Embarked' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "'Name' looks identifier-like and the plan does not drop it. This is advisory only: it does not violate a V1 execution invariant, and retaining such a column can be legitimate, so it never blocks execution on its own."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Cabin",
+                "strategy": "mode"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "PassengerId"
+              }
+            },
+            {
+              "tool_name": "convert_column_type",
+              "arguments": {
+                "column": "Cabin",
+                "target_type": "string"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 5,
+          "plan_hash": "3319d2372ed0b407b5d36a7372a94ba5279d8e47cf1e9d1d01b2a1522b3d17c0"
+        },
+        {
+          "attempt_number": 1,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 11004,
+          "wall_seconds": 196.7135561000032,
+          "wall_clock_over_timeout": false,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 194.6108487,
+            "load_duration_s": 1.4122731,
+            "prompt_eval_duration_s": 90.144298,
+            "eval_duration_s": 102.961897,
+            "prompt_eval_count": 3339,
+            "eval_count": 396,
+            "tokens_per_sec": 3.84608298349437
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Age' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Cabin' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values.",
+              "reason": "The plan imputed 'Embarked', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "The plan drops 'Name'."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Embarked",
+                "strategy": "mode"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Name"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Ticket"
+              }
+            },
+            {
+              "tool_name": "convert_column_type",
+              "arguments": {
+                "column": "Cabin",
+                "target_type": "string"
+              }
+            },
+            {
+              "tool_name": "encode_categorical_features",
+              "arguments": {
+                "columns": [
+                  "Sex",
+                  "Embarked"
+                ]
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 5,
+          "plan_hash": "9a4427b66b512a38b8d5c4b28710f4ed38c6f4d7467b6125cbd9e3adc089e4b6"
+        },
+        {
+          "attempt_number": 2,
+          "is_replan": true,
+          "cold_or_warm": "warm(mid-trial)",
+          "prompt_chars": 11148,
+          "wall_seconds": 1029.663734700007,
+          "wall_clock_over_timeout": true,
+          "transport_error": null,
+          "ollama_stats": {
+            "total_duration_s": 1027.5526282,
+            "load_duration_s": 2.1225192,
+            "prompt_eval_duration_s": 977.083791,
+            "eval_duration_s": 48.292886,
+            "prompt_eval_count": 3364,
+            "eval_count": 184,
+            "tokens_per_sec": 3.8100849885012047
+          },
+          "stage_reached": "adequacy",
+          "structural_valid": true,
+          "structural_violations": [],
+          "rejected_steps": [],
+          "duplicate_detected": false,
+          "adequacy_status": "FAIL",
+          "adequacy_material_failure": true,
+          "adequacy_findings": [
+            {
+              "condition": "target_protection",
+              "columns": [
+                "Survived"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "No plan step applies a feature-preprocessing operation to 'Survived'.",
+              "reason": "The target column is left untouched by feature preprocessing, as required."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Age"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Age' has 19.87% missing values.",
+              "reason": "The plan imputed 'Age', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Cabin"
+              ],
+              "status": "ADDRESSED",
+              "severity": "material",
+              "evidence": "'Cabin' has 77.1% missing values.",
+              "reason": "The plan dropped 'Cabin', which deterministically resolves its missing values before TRAIN."
+            },
+            {
+              "condition": "missing_values",
+              "columns": [
+                "Embarked"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "material",
+              "evidence": "'Embarked' has 0.22% missing values, and no plan step imputes or drops it.",
+              "reason": "PIPER V1 requires every column with missing values to be explicitly addressed (imputed or dropped) before TRAIN, because both Logistic Regression and Random Forest are always trained and compared. 'Embarked' is not named by any encode/scale step, so it would be silently excluded from the feature set by train_model()'s remainder='drop' rather than handled deliberately."
+            },
+            {
+              "condition": "identifier_like_column",
+              "columns": [
+                "Name"
+              ],
+              "status": "NOT_ADDRESSED",
+              "severity": "advisory",
+              "evidence": "'Name' is 100.0% unique (non-numeric).",
+              "reason": "'Name' looks identifier-like and the plan does not drop it. This is advisory only: it does not violate a V1 execution invariant, and retaining such a column can be legitimate, so it never blocks execution on its own."
+            }
+          ],
+          "proposed_steps": [
+            {
+              "tool_name": "impute_missing_values",
+              "arguments": {
+                "column": "Age",
+                "strategy": "median"
+              }
+            },
+            {
+              "tool_name": "drop_column",
+              "arguments": {
+                "column": "Cabin"
+              }
+            }
+          ],
+          "failure_category": "PLAN_ADEQUACY",
+          "parse_error": null,
+          "step_count": 2,
+          "plan_hash": "466e07069e39c833d5fcbd9df98fb43ca5cb624e8d9238024999ced575a4a086"
+        }
+      ],
+      "llm_calls": 3,
+      "replan_calls": 2,
+      "adequacy_failures": 3,
+      "structural_failures": 0,
+      "duplicate_terminations": 0,
+      "first_attempt_structurally_valid": true,
+      "first_attempt_adequate": false,
+      "final_executable": false,
+      "time_to_executable_plan": null,
+      "total_planning_latency": 1346.1855335000146,
+      "total_generation_latency": 242.927298,
+      "total_prompt_processing_latency": 1091.752197,
+      "outcome": "BUDGET_EXHAUSTION",
+      "terminal_category": "PLAN_ADEQUACY"
+    }
+  ]
+}
