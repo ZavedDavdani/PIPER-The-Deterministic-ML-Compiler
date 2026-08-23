@@ -532,3 +532,62 @@ class TestLiveEventStream:
 
         assert elapsed >= 0.5
         assert len(lines) == 1
+
+
+class TestProductizationEndpoints:
+    """V1.2 Batch 1: decision-trace / verdict / intervention / evidence."""
+
+    def test_decision_trace_missing_run_returns_404(self, api_client):
+        response = api_client.get("/runs/run_does_not_exist/decision-trace")
+        assert response.status_code == 404
+
+    def test_completed_run_returns_decision_trace_verdict_and_evidence(self, api_client):
+        dataset_id = _upload_telco(api_client)
+        create = api_client.post("/runs", json={"dataset_id": dataset_id, "target_column": "Churn"})
+        run_id = create.json()["run_id"]
+
+        trace = api_client.get(f"/runs/{run_id}/decision-trace")
+        assert trace.status_code == 200
+        body = trace.json()
+        assert body["run_id"] == run_id
+        ids = [s["id"] for s in body["stages"]]
+        assert ids == [
+            "LLM_PROPOSED", "VALIDATED", "ADEQUACY", "REPLAN",
+            "EXECUTION", "TRAINING", "EVALUATION", "GUARDRAILS", "FINAL_VERDICT",
+        ]
+        blob = trace.text.lower()
+        assert '"reasoning"' not in blob
+
+        verdict = api_client.get(f"/runs/{run_id}/verdict")
+        assert verdict.status_code == 200
+        assert verdict.json()["run_id"] == run_id
+        assert verdict.json()["outcome"] in {"ACCEPTED", "REJECTED", "HUMAN_INTERVENTION_REQUIRED"}
+
+        intervention = api_client.get(f"/runs/{run_id}/intervention")
+        assert intervention.status_code == 200
+
+        evidence = api_client.get(f"/runs/{run_id}/evidence")
+        assert evidence.status_code == 200
+        assert evidence.json()["schema_version"] == "piper.evidence.v1"
+        assert '"reasoning"' not in evidence.text.lower()
+
+    def test_verdict_and_evidence_are_409_while_run_is_in_progress(self, api_client):
+        class _RunningState:
+            dataset_id = "d1"
+            target_column = "t"
+            status = "running"
+            retry_count = 0
+            plan_history: list = []
+            planning_attempts: list = []
+
+        run_store = InMemoryRunStore()
+        run_store.create("run_inflight_product", _RunningState())
+        app.dependency_overrides[get_run_store] = lambda: run_store
+
+        try:
+            assert api_client.get("/runs/run_inflight_product/decision-trace").status_code == 200
+            assert api_client.get("/runs/run_inflight_product/verdict").status_code == 409
+            assert api_client.get("/runs/run_inflight_product/intervention").status_code == 409
+            assert api_client.get("/runs/run_inflight_product/evidence").status_code == 409
+        finally:
+            app.dependency_overrides.pop(get_run_store, None)

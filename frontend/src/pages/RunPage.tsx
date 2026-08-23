@@ -5,9 +5,11 @@ import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { RunStatusHeader } from '@/features/runs/RunStatusHeader'
 import { LiveEventFeed } from '@/features/runs/LiveEventFeed'
 import { ResultSummary } from '@/features/runs/ResultSummary'
+import { DecisionTracePanel } from '@/features/runs/DecisionTracePanel'
 import { useRunEvents } from '@/lib/useRunEvents'
 import { useRunStatus } from '@/lib/useRunStatus'
 import { useRunResult } from '@/lib/useRunResult'
+import { useDecisionTrace } from '@/lib/useDecisionTrace'
 
 export function RunPage() {
   const { runId = '' } = useParams<{ runId: string }>()
@@ -15,6 +17,7 @@ export function RunPage() {
   const { events, connectionState } = useRunEvents(runId || null, Boolean(runId))
   const isTerminal = status ? status.status === 'completed' || status.status === 'failed' : false
   const { result, error: resultError } = useRunResult(runId || null, isTerminal)
+  const { trace } = useDecisionTrace(runId || null, isTerminal)
 
   return (
     <div className="mx-auto flex max-w-5xl flex-col gap-6 px-4 py-8">
@@ -32,6 +35,8 @@ export function RunPage() {
       </Card>
 
       {statusError && <p className="text-destructive text-sm">{statusError}</p>}
+
+      <DecisionTracePanel runId={runId} isTerminal={isTerminal} trace={trace} />
 
       <Card>
         <CardHeader>

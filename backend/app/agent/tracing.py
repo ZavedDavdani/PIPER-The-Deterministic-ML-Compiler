@@ -94,6 +94,9 @@ class _RunResultState:
         self.error = d.get("error")
         self.cleaning_log = d.get("cleaning_log", [])
         self.feature_log = d.get("feature_log", [])
+        self.plan = d.get("plan", [])
+        self.planning_attempts = d.get("planning_attempts", [])
+        self.max_retries = d.get("max_retries", 2)
 
 
 def _tool_trace_events(run_id: str, tool_trace: list) -> tuple[list[TraceEvent], int]:

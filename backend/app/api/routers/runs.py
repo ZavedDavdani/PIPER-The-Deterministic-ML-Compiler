@@ -23,6 +23,12 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from fastapi.responses import StreamingResponse
 
 from app.agent import AgentState, build_graph
+from app.agent.productization import (
+    build_decision_trace,
+    build_evidence_export,
+    build_intervention,
+    build_verdict,
+)
 from app.agent.run_summary import build_run_summary
 from app.agent.timeline import build_execution_timeline
 from app.agent.tools.exploration import explore_alternative
@@ -46,6 +52,12 @@ from app.learning.explain import build_run_explanation
 from app.schemas.execution_timeline import ExecutionTimeline
 from app.schemas.exploration import ExplorationResult
 from app.schemas.learning import RunExplanation
+from app.schemas.productization import (
+    DecisionTrace,
+    EvidenceExport,
+    HumanInterventionPackage,
+    PiperVerdict,
+)
 from app.schemas.run_summary import RunSummary
 from app.storage import (
     DatasetStore,
@@ -324,6 +336,85 @@ def get_exploration(
     if result.run_id != run_id:
         raise HTTPException(status_code=404, detail=f"Exploration '{experiment_id}' does not belong to run '{run_id}'.")
     return result
+
+
+def _load_run_or_404(run_id: str, run_store: InMemoryRunStore):
+    try:
+        return run_store.get(run_id)
+    except RunNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+
+
+@router.get("/{run_id}/decision-trace", response_model=DecisionTrace)
+def get_run_decision_trace(
+    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+) -> DecisionTrace:
+    """
+    V1.2 productization: the operator-facing decision stages for this
+    run, derived from existing TraceEvents plus recorded planning
+    attempts. Available mid-run (like /timeline). Never includes LLM
+    reasoning. Does not affect execution.
+    """
+    record = _load_run_or_404(run_id, run_store)
+    events = run_store.get_events(run_id)
+    state = record.final_state
+    target = record.target_column
+    if state is not None:
+        target = getattr(state, "target_column", target)
+    return build_decision_trace(
+        run_id, record.status, events, state, target_column=target,
+    )
+
+
+@router.get("/{run_id}/verdict", response_model=PiperVerdict)
+def get_run_verdict(
+    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+) -> PiperVerdict:
+    """Deterministic final PIPER verdict. Terminal runs only."""
+    record = _load_run_or_404(run_id, run_store)
+    if record.status not in _TERMINAL_STATUSES or record.final_state is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_id}' is still '{record.status}' — no verdict yet.",
+        )
+    return build_verdict(run_id, record.status, record.final_state)
+
+
+@router.get("/{run_id}/intervention", response_model=HumanInterventionPackage)
+def get_run_intervention(
+    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+) -> HumanInterventionPackage:
+    """Human-intervention package. Terminal runs only. No chain-of-thought."""
+    record = _load_run_or_404(run_id, run_store)
+    if record.status not in _TERMINAL_STATUSES or record.final_state is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_id}' is still '{record.status}' — no intervention package yet.",
+        )
+    return build_intervention(run_id, record.status, record.final_state)
+
+
+@router.get("/{run_id}/evidence", response_model=EvidenceExport)
+def get_run_evidence(
+    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+) -> EvidenceExport:
+    """JSON evidence export. Terminal runs only."""
+    record = _load_run_or_404(run_id, run_store)
+    if record.status not in _TERMINAL_STATUSES or record.final_state is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_id}' is still '{record.status}' — no evidence export yet.",
+        )
+    events = run_store.get_events(run_id)
+    state = record.final_state
+    return build_evidence_export(
+        run_id,
+        record.status,
+        events,
+        state,
+        dataset_id=record.dataset_id,
+        target_column=getattr(state, "target_column", record.target_column),
+    )
 
 
 @router.get("/{run_id}/events")

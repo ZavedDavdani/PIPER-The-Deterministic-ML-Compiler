@@ -5,6 +5,10 @@ import type {
   DatasetListResponse,
   DatasetProfile,
   DatasetUploadResponse,
+  DecisionTrace,
+  EvidenceExport,
+  HumanInterventionPackage,
+  PiperVerdict,
   RunResultResponse,
   RunStatusResponse,
 } from './types'
@@ -80,4 +84,20 @@ export function getRunResult(runId: string): Promise<RunResultResponse> {
 
 export function runEventsUrl(runId: string): string {
   return `${API_BASE_URL}/runs/${encodeURIComponent(runId)}/events`
+}
+
+export function getDecisionTrace(runId: string): Promise<DecisionTrace> {
+  return request<DecisionTrace>(`/runs/${encodeURIComponent(runId)}/decision-trace`)
+}
+
+export function getVerdict(runId: string): Promise<PiperVerdict> {
+  return request<PiperVerdict>(`/runs/${encodeURIComponent(runId)}/verdict`)
+}
+
+export function getIntervention(runId: string): Promise<HumanInterventionPackage> {
+  return request<HumanInterventionPackage>(`/runs/${encodeURIComponent(runId)}/intervention`)
+}
+
+export function getEvidence(runId: string): Promise<EvidenceExport> {
+  return request<EvidenceExport>(`/runs/${encodeURIComponent(runId)}/evidence`)
 }

@@ -6,7 +6,15 @@ import {
   fixtureDatasetProfile,
   fixtureFailedResult,
 } from './fixtures'
-import type { CreateRunRequest, CreateRunResponse, DatasetUploadResponse, RunStatusResponse } from '@/lib/types'
+import type {
+  CreateRunRequest,
+  CreateRunResponse,
+  DatasetUploadResponse,
+  DecisionTrace,
+  HumanInterventionPackage,
+  PiperVerdict,
+  RunStatusResponse,
+} from '@/lib/types'
 
 /**
  * MSW handlers matching the REAL FastAPI contract (paths, methods,
@@ -27,6 +35,73 @@ export function setNextRunOutcome(status: RunStatusResponse['status'], result = 
 export function resetRunOutcome() {
   runStatusOverride = 'completed'
   resultOverride = fixtureCompletedResult
+}
+
+const STAGE_IDS = [
+  'LLM_PROPOSED',
+  'VALIDATED',
+  'ADEQUACY',
+  'REPLAN',
+  'EXECUTION',
+  'TRAINING',
+  'EVALUATION',
+  'GUARDRAILS',
+  'FINAL_VERDICT',
+] as const
+
+function fixtureDecisionTrace(runId: string, status: RunStatusResponse['status']): DecisionTrace {
+  const terminal = status === 'completed' || status === 'failed'
+  return {
+    run_id: runId,
+    run_status: status,
+    stages: STAGE_IDS.map((id) => ({
+      id,
+      label: id.replaceAll('_', ' '),
+      status: terminal ? (status === 'failed' && id === 'FINAL_VERDICT' ? 'failed' : 'passed') : 'pending',
+      summary: terminal ? 'Recorded.' : 'Waiting.',
+      attempt: 0,
+      evidence: {},
+    })),
+    planning_attempts: [],
+    plan_diffs: [],
+  }
+}
+
+function fixtureVerdict(runId: string, status: RunStatusResponse['status']): PiperVerdict {
+  const accepted = status === 'completed'
+  return {
+    run_id: runId,
+    outcome: accepted ? 'ACCEPTED' : 'REJECTED',
+    reason_code: accepted ? 'ACCEPTED_GUARDRAILS_PASSED' : 'REJECTED',
+    summary: accepted ? 'PIPER accepted this run.' : 'PIPER rejected this run.',
+    retry_count: 0,
+    max_retries: 2,
+    structurally_valid_plan: accepted,
+    adequacy_passed: accepted,
+    guardrails_passed: accepted,
+    human_intervention_required: status === 'failed',
+    executed: accepted,
+  }
+}
+
+function fixtureIntervention(runId: string, status: RunStatusResponse['status']): HumanInterventionPackage {
+  return {
+    run_id: runId,
+    required: status === 'failed',
+    headline: status === 'failed' ? 'Human review is required.' : 'No human intervention required.',
+    failure_category: status === 'failed' ? 'DUPLICATE_PLAN' : null,
+    failure_message: status === 'failed' ? 'duplicate' : null,
+    retry_count: 0,
+    max_retries: 2,
+    last_proposed_steps: [],
+    structural_violations: [],
+    material_adequacy_findings: [],
+    advisory_adequacy_findings: [],
+    preserved_valid_steps: [],
+    implicated_steps: [],
+    recommended_actions: status === 'failed' ? ['Read the structured failure.'] : [],
+    blocked_invalid_execution: status === 'failed',
+  }
 }
 
 export const handlers = [
@@ -78,6 +153,42 @@ export const handlers = [
       return HttpResponse.json({ detail: 'still running' }, { status: 409 })
     }
     return HttpResponse.json(runStatusOverride === 'failed' ? fixtureFailedResult : resultOverride)
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/decision-trace`, ({ params }) => {
+    return HttpResponse.json(fixtureDecisionTrace(String(params.runId), runStatusOverride))
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/verdict`, ({ params }) => {
+    if (runStatusOverride !== 'completed' && runStatusOverride !== 'failed') {
+      return HttpResponse.json({ detail: 'still running' }, { status: 409 })
+    }
+    return HttpResponse.json(fixtureVerdict(String(params.runId), runStatusOverride))
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/intervention`, ({ params }) => {
+    if (runStatusOverride !== 'completed' && runStatusOverride !== 'failed') {
+      return HttpResponse.json({ detail: 'still running' }, { status: 409 })
+    }
+    return HttpResponse.json(fixtureIntervention(String(params.runId), runStatusOverride))
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/evidence`, ({ params }) => {
+    if (runStatusOverride !== 'completed' && runStatusOverride !== 'failed') {
+      return HttpResponse.json({ detail: 'still running' }, { status: 409 })
+    }
+    const runId = String(params.runId)
+    return HttpResponse.json({
+      schema_version: 'piper.evidence.v1',
+      run_id: runId,
+      dataset_id: fixtureDatasetProfile.dataset_id,
+      target_column: 'Churn',
+      status: runStatusOverride,
+      decision_trace: fixtureDecisionTrace(runId, runStatusOverride),
+      verdict: fixtureVerdict(runId, runStatusOverride),
+      intervention: fixtureIntervention(runId, runStatusOverride),
+      notes: ['LLM reasoning / chain-of-thought is intentionally omitted.'],
+    })
   }),
 ]
 

@@ -28,7 +28,7 @@ Ten constraints this file must uphold (locked before writing):
 
 from __future__ import annotations
 
-from typing import Literal, Optional
+from typing import Any, Literal, Optional
 
 from pydantic import BaseModel, ConfigDict, Field
 
@@ -201,6 +201,14 @@ class AgentState(BaseModel):
     plan_history: list[str] = Field(
         default_factory=list,
         description="SHA-256 canonical plan hashes (see agent/plan_canonical.py) of every plan PROPOSED so far in this run, in order — whether it passed deterministic validation or was rejected as invalid. Used by the REPLAN loop to detect and reject a duplicate executable plan (DUPLICATE_PLAN, post-validation) or a duplicate already-rejected proposal (also DUPLICATE_PLAN, pre-validation — see plan_node_v2) before wasting a retry repeating something already known to fail.",
+    )
+    planning_attempts: list[Any] = Field(
+        default_factory=list,
+        description=(
+            "V1.2 productization: append-only record of each planner proposal's "
+            "executable steps (tool_name + arguments only) and the deterministic "
+            "gate outcome. Never used for routing or execution. Reasoning is omitted."
+        ),
     )
 
     # --- Execution logs (three distinct logs, per locked design) ---

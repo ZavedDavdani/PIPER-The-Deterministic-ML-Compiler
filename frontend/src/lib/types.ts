@@ -268,3 +268,95 @@ export interface TraceEvent {
 export interface ApiErrorBody {
   detail: string
 }
+
+// --- V1.2 productization (decision trace / verdict / intervention / evidence) ---
+
+export type StageId =
+  | 'LLM_PROPOSED'
+  | 'VALIDATED'
+  | 'ADEQUACY'
+  | 'REPLAN'
+  | 'EXECUTION'
+  | 'TRAINING'
+  | 'EVALUATION'
+  | 'GUARDRAILS'
+  | 'FINAL_VERDICT'
+
+export type StageStatus = 'pending' | 'current' | 'passed' | 'failed' | 'skipped' | 'not_reached'
+
+export interface ExecutableStep {
+  tool_name: string
+  arguments: Record<string, unknown>
+}
+
+export interface PlanningAttempt {
+  attempt: number
+  proposed_steps: ExecutableStep[]
+  plan_hash: string | null
+  structurally_valid: boolean
+  adequacy_status: 'PASS' | 'FAIL' | null
+  outcome: 'provider_error' | 'invalid' | 'duplicate' | 'inadequate' | 'accepted'
+  violation_count: number
+  material_finding_count: number
+}
+
+export interface DecisionStage {
+  id: StageId
+  label: string
+  status: StageStatus
+  summary: string
+  attempt: number | null
+  evidence: Record<string, unknown>
+}
+
+export interface DecisionTrace {
+  run_id: string
+  run_status: string
+  stages: DecisionStage[]
+  planning_attempts: PlanningAttempt[]
+  plan_diffs: Record<string, unknown>[]
+}
+
+export interface PiperVerdict {
+  run_id: string
+  outcome: 'ACCEPTED' | 'REJECTED' | 'HUMAN_INTERVENTION_REQUIRED'
+  reason_code: string
+  summary: string
+  retry_count: number
+  max_retries: number
+  structurally_valid_plan: boolean
+  adequacy_passed: boolean | null
+  guardrails_passed: boolean | null
+  human_intervention_required: boolean
+  executed: boolean
+}
+
+export interface HumanInterventionPackage {
+  run_id: string
+  required: boolean
+  headline: string
+  failure_category: string | null
+  failure_message: string | null
+  retry_count: number
+  max_retries: number
+  last_proposed_steps: ExecutableStep[]
+  structural_violations: Record<string, unknown>[]
+  material_adequacy_findings: Record<string, unknown>[]
+  advisory_adequacy_findings: Record<string, unknown>[]
+  preserved_valid_steps: ExecutableStep[]
+  implicated_steps: ExecutableStep[]
+  recommended_actions: string[]
+  blocked_invalid_execution: boolean
+}
+
+export interface EvidenceExport {
+  schema_version: 'piper.evidence.v1'
+  run_id: string
+  dataset_id: string
+  target_column: string
+  status: string
+  decision_trace: DecisionTrace
+  verdict: PiperVerdict | null
+  intervention: HumanInterventionPackage
+  notes: string[]
+}

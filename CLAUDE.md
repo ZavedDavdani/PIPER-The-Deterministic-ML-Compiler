@@ -21,6 +21,93 @@ discovered; don't let it drift from reality.
   Models: Logistic Regression, Random Forest (fixed candidate set, not
   LLM-choosable). Reference dataset: Telco Customer Churn.
 
+## V1.2 Batch 1 — Productization (COMPLETE on branch `v1.2-productization`)
+
+Implemented 2026-08-23 on `v1.2-productization` only — **`master` was not
+modified.** V1 architecture, `validate_proposed_plan()`, adequacy,
+target protection, REPLAN, duplicate detection, and retry bounds are
+unchanged. There is still **no automatic plan repair**, no fuzzy schema
+correction, and no silent plan mutation. Invalid LLM plans still cannot
+execute. Docker and cloud LLMs remain optional.
+
+This batch is operator-facing evidence only. It does **not** change
+routing, validation authority, or planner reliability. qwen3:4b remains
+**2/10** end-to-end (V1 measurement). Do not treat Batch 1 as a
+reliability improvement.
+
+### Features implemented
+
+1. **Productized decision trace** — nine stages:
+   LLM PROPOSED → VALIDATED → ADEQUACY → REPLAN → EXECUTION → TRAINING
+   → EVALUATION → GUARDRAILS → FINAL VERDICT. Built from existing
+   `TraceEvent`s plus append-only `planning_attempts` (executable
+   `tool_name` + `arguments` only; `PlanStep.reasoning` is stripped).
+2. **Deterministic plan diff** — reuses `diff_plans()` /
+   `canonicalize_plan()` between consecutive recorded attempts.
+3. **Deterministic final PIPER verdict** — `ACCEPTED` /
+   `REJECTED` / `HUMAN_INTERVENTION_REQUIRED` from terminal state +
+   failure category. Not an LLM judgment.
+4. **Human intervention package** — structured last proposal,
+   violations, adequacy findings, preserved/implicated steps,
+   recommended actions. No chain-of-thought.
+5. **JSON evidence export** — `schema_version: piper.evidence.v1`.
+6. **Frontend** — decision-trace strip on the run page, verdict,
+   intervention card, evidence JSON download. Existing result copy
+   (`Pipeline completed and passed validation`) is unchanged.
+
+### Files / components
+
+| Area | Path |
+|---|---|
+| Schemas | `backend/app/schemas/productization.py` |
+| Builders | `backend/app/agent/productization.py` |
+| Recording | `planning_attempts` on `AgentState`; `plan_node_v2` via `make_planning_attempt()` |
+| Tracing shim | `backend/app/agent/tracing.py` (`planning_attempts` on result state) |
+| API | `GET /runs/{id}/decision-trace` (mid-run), `/verdict`, `/intervention`, `/evidence` (terminal, 409 otherwise) |
+| Frontend | `DecisionTracePanel`, `useDecisionTrace`, `api.ts` / `types.ts`, MSW handlers |
+| Tests | `backend/tests/test_productization.py`, `TestProductizationEndpoints` in `test_api_runs.py` |
+
+### Tests and exact results (Batch 1)
+
+| Suite | Result |
+|---|---|
+| Focused productization + state + plan validation + API 404/409 | **10 passed** |
+| `TestProductizationEndpoints` including live Telco graph | included in full suite below |
+| **Full backend regression** | **939 passed, 5 skipped, 0 failures** (12m51s, `.venv`, 2026-08-23) |
+| Frontend Vitest | **28 passed** (6 files), 2026-08-23 |
+| Frontend `npm run build` | **PASS** (chunk-size advisory only) |
+
+Delta vs frozen V1 **928 passed / 5 skipped**: **+11 tests** (8 in `test_productization.py`, 3 in `TestProductizationEndpoints`). No existing tests were deleted or weakened.
+
+The 5 skips remain the real-Ollama integration tests (`PIPER_RUN_OLLAMA_TESTS=1`).
+
+### Trust boundary (re-checked)
+
+- `validate_proposed_plan()` remains the sole structural authority.
+- Productization builders are read-only; they never mutate `state.plan`.
+- Invalid `drop_column({"columns": [...]})` still fails validation and
+  keeps EXECUTION at `not_reached` in the decision trace.
+
+### Known limitations (Batch 1)
+
+- In-memory run store only (Batch 2: SQLite history / replay).
+- Decision trace is a *view* over recorded attempts + events; it does
+  not make the planner more complete.
+- Evidence export may include execution-log `reason` strings (tool
+  result text), which are not LLM chain-of-thought. LLM `PlanStep.reasoning`
+  is omitted from product APIs.
+- Planner reliability is still the V1 2/10 figure. Batch 1 does not
+  change that.
+
+### Remaining work
+
+- Batch 2 — local SQLite history, reopen runs, replay/audit without LLM,
+  Ollama config UI, evidence persistence.
+- Batch 3 — measured planner work, classification+regression, adversarial
+  benchmark, docs. Do not endlessly tune qwen3:4b/8b.
+
+---
+
 ## V1 ARCHITECTURE FROZEN (frozen 2026-08-15; independently re-audited and re-verified 2026-08-17)
 
 PIPER V1 is **COMPLETE AND FROZEN**. The architecture below has been
