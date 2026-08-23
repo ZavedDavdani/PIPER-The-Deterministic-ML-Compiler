@@ -439,3 +439,21 @@ class OllamaProvider:
             )
 
         return LLMProviderResult(success=True, plan=plan)
+
+    def list_local_models(self, timeout_seconds: float = 2.0) -> tuple[bool, list[str], Optional[str]]:
+        """
+        Probe Ollama /api/tags. Does not generate a plan and never
+        sends sampling options (no temperature).
+        """
+        url = f"{self.host.rstrip('/')}/api/tags"
+        try:
+            request = urllib.request.Request(url=url, method="GET")
+            with urllib.request.urlopen(request, timeout=timeout_seconds) as response:
+                body = json.loads(response.read().decode("utf-8"))
+        except Exception as exc:
+            return False, [], str(exc)
+        models: list[str] = []
+        for item in body.get("models") or []:
+            if isinstance(item, dict) and item.get("name"):
+                models.append(str(item["name"]))
+        return True, models, None

@@ -17,6 +17,10 @@ data/processed/*
 node_modules/
 dist/
 
+# Local SQLite run history (Batch 2)
+*.sqlite
+data/piper_runs.sqlite
+
 # OS
 .DS_Store
 

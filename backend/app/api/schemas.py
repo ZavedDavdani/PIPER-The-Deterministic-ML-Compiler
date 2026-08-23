@@ -101,6 +101,25 @@ class RunStatusResponse(BaseModel):
     plan_history: list[str] = Field(default_factory=list)
 
 
+class RunListItem(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    dataset_id: str
+    target_column: str
+    status: str
+    current_node: Optional[str] = None
+    attempt: int
+    created_at: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class RunListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    runs: list[RunListItem]
+
+
 class RunResultResponse(BaseModel):
     """
     Only meaningful once a run has reached a terminal status

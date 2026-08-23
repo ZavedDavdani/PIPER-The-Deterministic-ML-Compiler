@@ -45,6 +45,8 @@ from app.api.schemas import (
     CreateExplorationRequest,
     CreateRunRequest,
     CreateRunResponse,
+    RunListItem,
+    RunListResponse,
     RunResultResponse,
     RunStatusResponse,
 )
@@ -57,6 +59,7 @@ from app.schemas.productization import (
     EvidenceExport,
     HumanInterventionPackage,
     PiperVerdict,
+    ReplayResponse,
 )
 from app.schemas.run_summary import RunSummary
 from app.storage import (
@@ -138,6 +141,26 @@ def create_run(
     )
 
     return CreateRunResponse(run_id=run_id, status="running")
+
+
+@router.get("", response_model=RunListResponse)
+def list_runs(run_store: InMemoryRunStore = Depends(get_run_store)) -> RunListResponse:
+    """Persisted run history. Does not invoke the LLM."""
+    items = []
+    for record in run_store.list():
+        items.append(
+            RunListItem(
+                run_id=record.run_id,
+                dataset_id=record.dataset_id,
+                target_column=record.target_column,
+                status=record.status,
+                current_node=record.current_node,
+                attempt=record.attempt,
+                created_at=getattr(record, "created_at", None),
+                updated_at=getattr(record, "updated_at", None),
+            )
+        )
+    return RunListResponse(runs=items)
 
 
 @router.get("/{run_id}", response_model=RunStatusResponse)
@@ -407,13 +430,53 @@ def get_run_evidence(
         )
     events = run_store.get_events(run_id)
     state = record.final_state
-    return build_evidence_export(
+    export = build_evidence_export(
         run_id,
         record.status,
         events,
         state,
         dataset_id=record.dataset_id,
         target_column=getattr(state, "target_column", record.target_column),
+    )
+    if hasattr(run_store, "save_evidence"):
+        run_store.save_evidence(run_id, export.model_dump(mode="json"))
+    return export
+
+
+@router.get("/{run_id}/replay", response_model=ReplayResponse)
+def replay_run(
+    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+) -> ReplayResponse:
+    """
+    Rebuild decision evidence from persisted events + terminal state.
+    Does not call generate_plan() or any LLM provider.
+    """
+    record = _load_run_or_404(run_id, run_store)
+    if record.status not in _TERMINAL_STATUSES or record.final_state is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_id}' is still '{record.status}' — nothing to replay yet.",
+        )
+    events = run_store.get_events(run_id)
+    state = record.final_state
+    target = getattr(state, "target_column", record.target_column)
+    evidence = build_evidence_export(
+        run_id,
+        record.status,
+        events,
+        state,
+        dataset_id=record.dataset_id,
+        target_column=target,
+    )
+    return ReplayResponse(
+        run_id=run_id,
+        llm_invoked=False,
+        source="persisted_events_and_state",
+        status=record.status,
+        decision_trace=evidence.decision_trace,
+        verdict=evidence.verdict,
+        intervention=evidence.intervention,
+        evidence=evidence,
     )
 
 

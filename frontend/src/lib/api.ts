@@ -8,7 +8,10 @@ import type {
   DecisionTrace,
   EvidenceExport,
   HumanInterventionPackage,
+  OllamaStatusResponse,
   PiperVerdict,
+  ReplayResponse,
+  RunListResponse,
   RunResultResponse,
   RunStatusResponse,
 } from './types'
@@ -100,4 +103,24 @@ export function getIntervention(runId: string): Promise<HumanInterventionPackage
 
 export function getEvidence(runId: string): Promise<EvidenceExport> {
   return request<EvidenceExport>(`/runs/${encodeURIComponent(runId)}/evidence`)
+}
+
+export function listRuns(): Promise<RunListResponse> {
+  return request<RunListResponse>('/runs')
+}
+
+export function replayRun(runId: string): Promise<ReplayResponse> {
+  return request<ReplayResponse>(`/runs/${encodeURIComponent(runId)}/replay`)
+}
+
+export function getOllamaStatus(): Promise<OllamaStatusResponse> {
+  return request<OllamaStatusResponse>('/settings/ollama')
+}
+
+export function updateOllamaConfig(body: { model?: string; host?: string }): Promise<OllamaStatusResponse> {
+  return request<OllamaStatusResponse>('/settings/ollama', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
 }

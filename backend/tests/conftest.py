@@ -8,6 +8,11 @@ tests, no ordering dependencies.
 
 from __future__ import annotations
 
+import os
+
+# Isolate the default API TestClient from the local SQLite product store.
+os.environ["PIPER_RUN_STORE"] = "memory"
+
 from pathlib import Path
 
 import pandas as pd

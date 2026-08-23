@@ -25,6 +25,9 @@ export function RunPage() {
         <Link to="/" className="text-muted-foreground hover:text-foreground flex items-center gap-1 text-sm">
           <ArrowLeft className="size-3.5" /> Back to datasets
         </Link>
+        <Link to="/history" className="text-muted-foreground hover:text-foreground text-sm">
+          History
+        </Link>
         <ThemeToggle />
       </div>
 

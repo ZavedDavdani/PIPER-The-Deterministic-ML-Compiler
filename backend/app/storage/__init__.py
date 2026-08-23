@@ -27,6 +27,8 @@ from app.storage.exceptions import (
 from app.storage.exploration_store import ExplorationStore, InMemoryExplorationStore
 from app.storage.run_and_model_store import ModelStore, RunStore
 from app.storage.run_store import InMemoryRunStore, RunRecord
+from app.storage.sqlite_run_store import SqliteRunStore
+from app.storage.store_factory import create_run_store
 
 __all__ = [
     "DatasetStore",
@@ -39,6 +41,8 @@ __all__ = [
     "ModelArtifactMetadata",
     "RunStore",
     "InMemoryRunStore",
+    "SqliteRunStore",
+    "create_run_store",
     "RunRecord",
     "ExplorationStore",
     "InMemoryExplorationStore",

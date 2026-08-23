@@ -35,13 +35,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api.routers.datasets import router as datasets_router
 from app.api.routers.learning import router as learning_router
 from app.api.routers.runs import router as runs_router
+from app.api.routers.settings import router as settings_router
 from app.llm.ollama_provider import OllamaProvider
 from app.storage import (
     InMemoryDatasetStore,
     InMemoryExplorationStore,
     InMemoryModelStore,
-    InMemoryRunStore,
     InMemorySplitStore,
+    create_run_store,
 )
 
 DEFAULT_CORS_ORIGINS = [
@@ -72,7 +73,7 @@ async def lifespan(app: FastAPI):
     app.state.dataset_store = InMemoryDatasetStore()
     app.state.split_store = InMemorySplitStore()
     app.state.model_store = InMemoryModelStore()
-    app.state.run_store = InMemoryRunStore()
+    app.state.run_store = create_run_store()
     app.state.exploration_store = InMemoryExplorationStore()
     app.state.llm_provider = OllamaProvider()
     yield
@@ -95,6 +96,7 @@ app.add_middleware(
 app.include_router(datasets_router)
 app.include_router(runs_router)
 app.include_router(learning_router)
+app.include_router(settings_router)
 
 
 @app.get("/health")
