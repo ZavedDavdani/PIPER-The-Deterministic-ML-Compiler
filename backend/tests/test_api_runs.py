@@ -589,5 +589,50 @@ class TestProductizationEndpoints:
             assert api_client.get("/runs/run_inflight_product/verdict").status_code == 409
             assert api_client.get("/runs/run_inflight_product/intervention").status_code == 409
             assert api_client.get("/runs/run_inflight_product/evidence").status_code == 409
+            assert api_client.get("/runs/run_inflight_product/replay").status_code == 409
         finally:
             app.dependency_overrides.pop(get_run_store, None)
+
+
+class TestRunHistoryAndReplay:
+    def test_list_runs_includes_completed_run(self, api_client):
+        dataset_id = _upload_telco(api_client)
+        create = api_client.post("/runs", json={"dataset_id": dataset_id, "target_column": "Churn"})
+        run_id = create.json()["run_id"]
+
+        listed = api_client.get("/runs")
+        assert listed.status_code == 200
+        runs = listed.json()["runs"]
+        assert any(item["run_id"] == run_id for item in runs)
+
+    def test_replay_rebuilds_evidence_without_llm(self, api_client):
+        dataset_id = _upload_telco(api_client)
+        create = api_client.post("/runs", json={"dataset_id": dataset_id, "target_column": "Churn"})
+        run_id = create.json()["run_id"]
+
+        replay = api_client.get(f"/runs/{run_id}/replay")
+        assert replay.status_code == 200
+        body = replay.json()
+        assert body["llm_invoked"] is False
+        assert body["source"] == "persisted_events_and_state"
+        assert body["run_id"] == run_id
+        assert body["evidence"]["schema_version"] == "piper.evidence.v1"
+        assert '"reasoning"' not in replay.text.lower()
+
+
+class TestOllamaSettings:
+    def test_get_ollama_status_does_not_require_a_live_server(self, api_client):
+        response = api_client.get("/settings/ollama")
+        assert response.status_code == 200
+        body = response.json()
+        assert "host" in body
+        assert "model" in body
+        assert "reachable" in body
+        assert "models" in body
+
+    def test_put_model_does_not_accept_temperature(self, api_client):
+        response = api_client.put(
+            "/settings/ollama",
+            json={"model": "qwen3:4b", "temperature": 0.0},
+        )
+        assert response.status_code == 422

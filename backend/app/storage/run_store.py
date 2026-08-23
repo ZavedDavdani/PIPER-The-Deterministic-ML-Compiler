@@ -20,6 +20,7 @@ TraceEvents are given to it.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field
@@ -66,6 +67,9 @@ class RunRecord(BaseModel):
     plan_history: list[str] = Field(default_factory=list)
     events: list[TraceEvent] = Field(default_factory=list)
     final_state: object = None
+    evidence_json: Optional[dict] = None
+    created_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
+    updated_at: str = Field(default_factory=lambda: datetime.now(timezone.utc).isoformat())
 
 
 class InMemoryRunStore(RunStore):
@@ -113,6 +117,11 @@ class InMemoryRunStore(RunStore):
         record.plan_history = list(getattr(state, "plan_history", record.plan_history))
         if record.status in ("completed", "failed"):
             record.final_state = state
+        record.updated_at = datetime.now(timezone.utc).isoformat()
+
+    def list(self) -> list[RunRecord]:
+        """Newest-updated first. Additive — not part of the original ABC."""
+        return sorted(self._runs.values(), key=lambda r: r.updated_at, reverse=True)
 
     def append_trace(self, run_id: str, trace_entry) -> None:
         """Satisfies the locked RunStore interface — delegates to append_event."""
@@ -123,6 +132,7 @@ class InMemoryRunStore(RunStore):
             raise RunNotFoundError(run_id)
         self._runs[run_id].events.append(event)
         self._runs[run_id].current_node = event.node
+        self._runs[run_id].updated_at = datetime.now(timezone.utc).isoformat()
 
     def get_events(self, run_id: str) -> list:
         return self.get(run_id).events
@@ -140,3 +150,9 @@ class InMemoryRunStore(RunStore):
 
     def exists(self, run_id: str) -> bool:
         return run_id in self._runs
+
+    def save_evidence(self, run_id: str, evidence: dict) -> None:
+        if run_id not in self._runs:
+            raise RunNotFoundError(run_id)
+        self._runs[run_id].evidence_json = evidence
+        self._runs[run_id].updated_at = datetime.now(timezone.utc).isoformat()

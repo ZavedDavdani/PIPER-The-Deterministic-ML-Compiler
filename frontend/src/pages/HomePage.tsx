@@ -1,11 +1,12 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ThemeToggle } from '@/components/ui/theme-toggle'
 import { DatasetUpload } from '@/features/datasets/DatasetUpload'
 import { DatasetList } from '@/features/datasets/DatasetList'
 import { DatasetPreview } from '@/features/datasets/DatasetPreview'
 import { RunCreateForm } from '@/features/runs/RunCreateForm'
+import { OllamaStatusCard } from '@/features/settings/OllamaStatusCard'
 import type { DatasetProfile } from '@/lib/types'
 
 export function HomePage() {
@@ -29,7 +30,12 @@ export function HomePage() {
             validate, and train a model end to end.
           </p>
         </div>
-        <ThemeToggle />
+        <div className="flex items-center gap-3">
+          <Link to="/history" className="text-muted-foreground hover:text-foreground text-sm">
+            Run history
+          </Link>
+          <ThemeToggle />
+        </div>
       </header>
 
       <div className="grid gap-6 md:grid-cols-2">
@@ -61,6 +67,8 @@ export function HomePage() {
         </div>
 
         <div className="flex flex-col gap-6">
+          <OllamaStatusCard />
+
           {selectedDatasetId ? (
             <>
               <Card>

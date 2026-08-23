@@ -90,7 +90,7 @@ The 5 skips remain the real-Ollama integration tests (`PIPER_RUN_OLLAMA_TESTS=1`
 
 ### Known limitations (Batch 1)
 
-- In-memory run store only (Batch 2: SQLite history / replay).
+- ~~In-memory run store only~~ — closed in Batch 2 (SQLite default; pytest still uses memory).
 - Decision trace is a *view* over recorded attempts + events; it does
   not make the planner more complete.
 - Evidence export may include execution-log `reason` strings (tool
@@ -99,10 +99,60 @@ The 5 skips remain the real-Ollama integration tests (`PIPER_RUN_OLLAMA_TESTS=1`
 - Planner reliability is still the V1 2/10 figure. Batch 1 does not
   change that.
 
+---
+
+## V1.2 Batch 2 — Local platform (COMPLETE on branch `v1.2-productization`)
+
+Implemented 2026-08-23 on `v1.2-productization` only — **`master` was not
+modified.** No GitHub remote; checkpoints are local Git commits only.
+
+This batch adds local run persistence and operator UI. It does **not**
+change `validate_proposed_plan()`, graph routing, REPLAN, or planner
+reliability. qwen3:4b remains **2/10**. Ollama requests still send no
+`options` / temperature.
+
+### Features implemented
+
+1. **SQLite run store** — `SqliteRunStore` persists run metadata, trace
+   events, terminal state snapshot, and evidence JSON. Same public
+   methods as `InMemoryRunStore`.
+2. **Store factory** — default `PIPER_RUN_STORE=sqlite` (path
+   `PIPER_SQLITE_PATH`, default `data/piper_runs.sqlite`). Pytest forces
+   `PIPER_RUN_STORE=memory` so the suite stays isolated.
+3. **Run history API** — `GET /runs` lists stored runs (newest updated
+   first). Reopen is the existing `GET /runs/{id}` + decision-trace
+   endpoints against persisted records.
+4. **Replay without LLM** — `GET /runs/{id}/replay` rebuilds decision
+   trace / verdict / intervention / evidence from stored events + state.
+   `llm_invoked` is always `false`. Terminal only (409 otherwise).
+5. **Evidence persistence** — terminal `GET /evidence` also writes
+   `evidence_json` onto the store when `save_evidence()` exists.
+6. **Ollama settings** — `GET`/`PUT /settings/ollama` for host/model/
+   reachability/`/api/tags`. PUT reconstructs `OllamaProvider` only;
+   it never adds sampling options.
+7. **Frontend** — home Ollama card, `/history` page, MSW handlers.
+
+### Trust boundary (re-checked)
+
+- Replay and history are read-only views over stored evidence.
+- Invalid plans still cannot execute. Validation authority is unchanged.
+- `generate_plan()` payload remains `{model, prompt, stream, format, keep_alive}`.
+
+### Tests and exact results (Batch 2)
+
+| Suite | Result |
+|---|---|
+| Focused sqlite + history/replay + Ollama settings + productization endpoints | **12 passed** |
+| **Full backend regression** | **948 passed, 5 skipped, 0 failures** (19m35s, `.venv`, 2026-08-23) |
+| Frontend Vitest | **28 passed** (6 files), 2026-08-23 |
+| Frontend `npm run build` | **PASS** (chunk-size advisory only) |
+
+Delta vs Batch 1 **939 passed / 5 skipped**: **+9 tests** (5 in
+`test_sqlite_run_store.py`, 2 `TestRunHistoryAndReplay`, 2
+`TestOllamaSettings`). No existing tests were deleted or weakened.
+
 ### Remaining work
 
-- Batch 2 — local SQLite history, reopen runs, replay/audit without LLM,
-  Ollama config UI, evidence persistence.
 - Batch 3 — measured planner work, classification+regression, adversarial
   benchmark, docs. Do not endlessly tune qwen3:4b/8b.
 

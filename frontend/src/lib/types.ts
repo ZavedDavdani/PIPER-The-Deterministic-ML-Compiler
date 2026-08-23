@@ -360,3 +360,38 @@ export interface EvidenceExport {
   intervention: HumanInterventionPackage
   notes: string[]
 }
+
+export interface RunListItem {
+  run_id: string
+  dataset_id: string
+  target_column: string
+  status: string
+  current_node: string | null
+  attempt: number
+  created_at: string | null
+  updated_at: string | null
+}
+
+export interface RunListResponse {
+  runs: RunListItem[]
+}
+
+export interface ReplayResponse {
+  run_id: string
+  llm_invoked: false
+  source: 'persisted_events_and_state'
+  status: string
+  decision_trace: DecisionTrace
+  verdict: PiperVerdict | null
+  intervention: HumanInterventionPackage
+  evidence: EvidenceExport
+}
+
+export interface OllamaStatusResponse {
+  host: string
+  model: string
+  keep_alive: string
+  reachable: boolean
+  models: string[]
+  error: string | null
+}

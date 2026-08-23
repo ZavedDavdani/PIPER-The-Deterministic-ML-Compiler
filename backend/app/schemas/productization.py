@@ -156,3 +156,18 @@ class EvidenceExport(BaseModel):
     evaluation_results: list[EvaluationResult] = Field(default_factory=list)
     executed_operations: list[ExecutableStep] = Field(default_factory=list)
     notes: list[str] = Field(default_factory=list)
+
+
+class ReplayResponse(BaseModel):
+    """Audit/replay of a stored run. Never invokes the LLM."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    llm_invoked: Literal[False] = False
+    source: Literal["persisted_events_and_state"] = "persisted_events_and_state"
+    status: str
+    decision_trace: DecisionTrace
+    verdict: Optional[PiperVerdict] = None
+    intervention: HumanInterventionPackage
+    evidence: EvidenceExport

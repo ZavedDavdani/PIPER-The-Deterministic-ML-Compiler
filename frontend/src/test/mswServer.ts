@@ -135,6 +135,46 @@ export const handlers = [
     return HttpResponse.json(response, { status: 202 })
   }),
 
+  http.get(`${API_BASE_URL}/runs`, () => {
+    return HttpResponse.json({
+      runs: [
+        {
+          run_id: resultOverride.run_id,
+          dataset_id: fixtureDatasetProfile.dataset_id,
+          target_column: 'Churn',
+          status: runStatusOverride,
+          current_node: null,
+          attempt: 0,
+          created_at: null,
+          updated_at: null,
+        },
+      ],
+    })
+  }),
+
+  http.get(`${API_BASE_URL}/settings/ollama`, () => {
+    return HttpResponse.json({
+      host: 'http://localhost:11434',
+      model: 'qwen3:4b',
+      keep_alive: '10m',
+      reachable: false,
+      models: [],
+      error: 'unreachable',
+    })
+  }),
+
+  http.put(`${API_BASE_URL}/settings/ollama`, async ({ request }) => {
+    const body = (await request.json()) as { model?: string; host?: string }
+    return HttpResponse.json({
+      host: body.host ?? 'http://localhost:11434',
+      model: body.model ?? 'qwen3:4b',
+      keep_alive: '10m',
+      reachable: false,
+      models: [],
+      error: 'unreachable',
+    })
+  }),
+
   http.get(`${API_BASE_URL}/runs/:runId`, ({ params }) => {
     const response: RunStatusResponse = {
       run_id: String(params.runId),
@@ -187,7 +227,35 @@ export const handlers = [
       decision_trace: fixtureDecisionTrace(runId, runStatusOverride),
       verdict: fixtureVerdict(runId, runStatusOverride),
       intervention: fixtureIntervention(runId, runStatusOverride),
-      notes: ['LLM reasoning / chain-of-thought is intentionally omitted.'],
+      notes: ['LLM chain-of-thought is intentionally omitted.'],
+    })
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/replay`, ({ params }) => {
+    if (runStatusOverride !== 'completed' && runStatusOverride !== 'failed') {
+      return HttpResponse.json({ detail: 'still running' }, { status: 409 })
+    }
+    const runId = String(params.runId)
+    const evidence = {
+      schema_version: 'piper.evidence.v1',
+      run_id: runId,
+      dataset_id: fixtureDatasetProfile.dataset_id,
+      target_column: 'Churn',
+      status: runStatusOverride,
+      decision_trace: fixtureDecisionTrace(runId, runStatusOverride),
+      verdict: fixtureVerdict(runId, runStatusOverride),
+      intervention: fixtureIntervention(runId, runStatusOverride),
+      notes: ['LLM chain-of-thought is intentionally omitted.'],
+    }
+    return HttpResponse.json({
+      run_id: runId,
+      llm_invoked: false,
+      source: 'persisted_events_and_state',
+      status: runStatusOverride,
+      decision_trace: evidence.decision_trace,
+      verdict: evidence.verdict,
+      intervention: evidence.intervention,
+      evidence,
     })
   }),
 ]
