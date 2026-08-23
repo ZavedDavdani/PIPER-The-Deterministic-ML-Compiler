@@ -10,6 +10,8 @@ monkeypatching app.state directly.
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import Request
 
 from app.storage import DatasetStore, InMemoryExplorationStore, InMemoryModelStore, InMemoryRunStore, SplitStore
@@ -44,3 +46,7 @@ def get_llm_provider(request: Request):
     FakeLLMProvider/heuristic test double (via dependency_overrides).
     """
     return request.app.state.llm_provider
+
+
+def get_artifact_dir(request: Request) -> Path:
+    return request.app.state.artifact_dir

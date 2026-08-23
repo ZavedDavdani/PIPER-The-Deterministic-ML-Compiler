@@ -387,6 +387,24 @@ export interface ReplayResponse {
   evidence: EvidenceExport
 }
 
+export interface ArtifactStatusResponse {
+  run_id: string
+  artifact_status: 'NOT_GENERATED' | 'VERIFIED' | 'FAILED' | string
+  parity_status: string
+  winning_model_id: string | null
+  algorithm: string | null
+  files: string[]
+  error: { code?: string; message?: string; details?: Record<string, unknown> } | null
+  created_at: string | null
+  parity?: Record<string, unknown> | null
+}
+
+export interface ArtifactFileListResponse {
+  run_id: string
+  artifact_status: string
+  files: string[]
+}
+
 export interface OllamaStatusResponse {
   host: string
   model: string

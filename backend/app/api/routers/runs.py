@@ -18,9 +18,10 @@ from __future__ import annotations
 
 import asyncio
 import uuid
+from pathlib import Path
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from fastapi.responses import StreamingResponse
+from fastapi.responses import FileResponse, StreamingResponse
 
 from app.agent import AgentState, build_graph
 from app.agent.productization import (
@@ -33,7 +34,14 @@ from app.agent.run_summary import build_run_summary
 from app.agent.timeline import build_execution_timeline
 from app.agent.tools.exploration import explore_alternative
 from app.agent.tracing import stream_with_tracing
+from app.artifacts.errors import ArtifactEligibilityError, ArtifactParityError
+from app.artifacts.publisher import (
+    DOWNLOADABLE_FILES,
+    publish_run_artifacts,
+    read_artifact_status,
+)
 from app.api.dependencies import (
+    get_artifact_dir,
     get_dataset_store,
     get_exploration_store,
     get_llm_provider,
@@ -42,6 +50,8 @@ from app.api.dependencies import (
     get_split_store,
 )
 from app.api.schemas import (
+    ArtifactFileListResponse,
+    ArtifactStatusResponse,
     CreateExplorationRequest,
     CreateRunRequest,
     CreateRunResponse,
@@ -478,6 +488,109 @@ def replay_run(
         intervention=evidence.intervention,
         evidence=evidence,
     )
+
+
+def _artifact_status_response(payload: dict) -> ArtifactStatusResponse:
+    return ArtifactStatusResponse(
+        run_id=payload["run_id"],
+        artifact_status=payload["artifact_status"],
+        parity_status=payload["parity_status"],
+        winning_model_id=payload.get("winning_model_id"),
+        algorithm=payload.get("algorithm"),
+        files=list(payload.get("files") or []),
+        error=payload.get("error"),
+        created_at=payload.get("created_at"),
+        parity=payload.get("parity"),
+    )
+
+
+@router.post("/{run_id}/artifacts", response_model=ArtifactStatusResponse, status_code=201)
+def generate_run_artifacts(
+    run_id: str,
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    model_store: InMemoryModelStore = Depends(get_model_store),
+    split_store: SplitStore = Depends(get_split_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> ArtifactStatusResponse:
+    """
+    Compile a verified completed run into a portable ML artifact bundle.
+    Does not invoke Ollama. Failed/unsafe runs are rejected.
+    """
+    if not run_store.exists(run_id):
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+    try:
+        payload = publish_run_artifacts(
+            run_id,
+            run_store=run_store,
+            model_store=model_store,
+            split_store=split_store,
+            artifact_root=artifact_dir,
+        )
+    except ArtifactEligibilityError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail={"code": exc.code, "message": exc.message, "details": exc.details},
+        ) from exc
+    except ArtifactParityError as exc:
+        raise HTTPException(
+            status_code=409,
+            detail={"code": exc.code, "message": exc.message, "details": exc.details},
+        ) from exc
+    except RunNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+    return _artifact_status_response(payload)
+
+
+@router.get("/{run_id}/artifacts", response_model=ArtifactStatusResponse)
+def get_run_artifact_status(
+    run_id: str,
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> ArtifactStatusResponse:
+    if not run_store.exists(run_id):
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+    return _artifact_status_response(read_artifact_status(artifact_dir, run_id))
+
+
+@router.get("/{run_id}/artifacts/files", response_model=ArtifactFileListResponse)
+def list_run_artifact_files(
+    run_id: str,
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> ArtifactFileListResponse:
+    if not run_store.exists(run_id):
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+    payload = read_artifact_status(artifact_dir, run_id)
+    return ArtifactFileListResponse(
+        run_id=run_id,
+        artifact_status=payload["artifact_status"],
+        files=list(payload.get("files") or []),
+    )
+
+
+@router.get("/{run_id}/artifacts/files/{filename}")
+def download_run_artifact_file(
+    run_id: str,
+    filename: str,
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> FileResponse:
+    if not run_store.exists(run_id):
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+    if filename not in DOWNLOADABLE_FILES:
+        raise HTTPException(status_code=404, detail=f"Artifact file '{filename}' is not published.")
+    path = (artifact_dir / run_id / filename).resolve()
+    root = (artifact_dir / run_id).resolve()
+    if root not in path.parents and path != root / filename:
+        raise HTTPException(status_code=404, detail=f"Artifact file '{filename}' is not published.")
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail=f"Artifact file '{filename}' is not available.")
+    media = "application/octet-stream"
+    if filename.endswith(".json") or filename.endswith(".ipynb"):
+        media = "application/json"
+    elif filename.endswith(".py"):
+        media = "text/x-python"
+    return FileResponse(path, media_type=media, filename=filename)
 
 
 @router.get("/{run_id}/events")

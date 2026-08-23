@@ -158,3 +158,25 @@ class CreateExplorationRequest(BaseModel):
     new_algorithm: Optional[Algorithm] = None
     hyperparameter_name: Optional[str] = None
     hyperparameter_value: Optional[float] = None
+
+
+class ArtifactStatusResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    artifact_status: str
+    parity_status: str
+    winning_model_id: Optional[str] = None
+    algorithm: Optional[str] = None
+    files: list[str] = Field(default_factory=list)
+    error: Optional[dict] = None
+    created_at: Optional[str] = None
+    parity: Optional[dict] = None
+
+
+class ArtifactFileListResponse(BaseModel):
+    model_config = ConfigDict(extra="forbid")
+
+    run_id: str
+    artifact_status: str
+    files: list[str] = Field(default_factory=list)

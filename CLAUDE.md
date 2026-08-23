@@ -151,10 +151,126 @@ Delta vs Batch 1 **939 passed / 5 skipped**: **+9 tests** (5 in
 `test_sqlite_run_store.py`, 2 `TestRunHistoryAndReplay`, 2
 `TestOllamaSettings`). No existing tests were deleted or weakened.
 
+---
+
+## V1.2 Phase 3 — ML artifact generation (COMPLETE on branch `v1.2-productization`)
+
+Implemented 2026-08-23 on `v1.2-productization` only — **`master` was not
+modified.** Local Git checkpoint only.
+
+PIPER compiles a **completed, guardrail-valid** run into a portable
+sklearn artifact bundle. This does **not** change `validate_proposed_plan()`,
+routing, REPLAN, or planner reliability. qwen3:4b remains **2/10**.
+Ollama is **not** called during artifact generation.
+
+PIPER is the compiler: LLM plan → validation → adequacy → execution →
+training → evaluation → guardrails → **fitted winning Pipeline** → export.
+
+The exported bundle does not require PIPER, LangGraph, FastAPI, SQLite,
+or Ollama to run inference.
+
+### Artifact architecture
+
+- Source of truth is the **in-process fitted** `ModelArtifact.pipeline`
+  in `ModelStore` (the same object `evaluate_model()` used), **not** a
+  reconstruction from the original LLM plan.
+- Eligibility: `status == "completed"`, `validation.valid is True`,
+  `comparison.recommended_model_id` present, fitted pipeline and its
+  evaluation split still retrievable.
+- **Parity gate (non-negotiable):** `joblib.dump` → reload →
+  `np.array_equal(y_pred_memory, y_pred_artifact)` on the evaluation
+  holdout. Failure raises `ArtifactParityError`, writes `artifact_status:
+  FAILED`, does **not** mark VERIFIED, does not silently repair.
+- `pipeline.py` is a deterministic template (pandas / scikit-learn /
+  joblib only).
+- `training_reproduction.ipynb` is generated from recorded executed
+  metadata; hyperparameters that were not recorded are not invented.
+- `evidence.json` reuses `build_evidence_export()` (`piper.evidence.v1`).
+- `hashes.json` (SHA-256) is written **last**, after other files, and
+  does not hash itself.
+
+### Bundle structure (`artifacts/{run_id}/`)
+
+```
+pipeline.joblib
+pipeline.py
+training_reproduction.ipynb
+manifest.json
+evidence.json
+hashes.json
+status.json
+```
+
+`manifest.json` / `status.json` set `artifact_status: VERIFIED` only after
+parity succeeds.
+
+### APIs
+
+| Method | Path | Behavior |
+|---|---|---|
+| POST | `/runs/{id}/artifacts` | Generate bundle. 201 VERIFIED; 409 ineligible/parity; 404 missing run. **Not** automatic on run complete. |
+| GET | `/runs/{id}/artifacts` | Status (`NOT_GENERATED` / `VERIFIED` / `FAILED`) |
+| GET | `/runs/{id}/artifacts/files` | Filename list |
+| GET | `/runs/{id}/artifacts/files/{filename}` | Download (allowlisted names only) |
+
+Default directory: `PIPER_ARTIFACT_DIR` (default `artifacts/`).
+
+### Frontend
+
+`ArtifactPanel` on the completed-run page: status, model, parity,
+generate button, downloads. Distinguishes **VERIFIED ARTIFACT** from
+**ARTIFACT GENERATION FAILED**. Failed/unsafe runs are not offered as
+deployable exports.
+
+### Tests and exact results (Phase 3)
+
+| Suite | Result |
+|---|---|
+| Focused `tests/test_artifacts.py` | **13 passed** (eligibility, joblib round-trip, parity pass/fail, `ArtifactParityError`, bundle files, hashes, pipeline.py constraints, no `generate_plan()` during publish, API generate/download, failed-run 409) |
+| **Full backend regression** | **961 passed, 5 skipped, 0 failures** (18m56s, `.venv`, 2026-08-23) |
+| Frontend Vitest | **30 passed** (7 files), 2026-08-23 |
+| Frontend `npm run build` | **PASS** (chunk-size advisory only) |
+
+Delta vs Batch 2 **948 passed / 5 skipped**: **+13 tests** (all in
+`test_artifacts.py`). No existing tests were deleted or weakened.
+
+The 5 skips remain the real-Ollama integration tests (`PIPER_RUN_OLLAMA_TESTS=1`).
+
+### Real demo / Ollama
+
+A live Ollama daemon was **not reachable** at `http://127.0.0.1:11434`
+during this checkpoint (`curl` connection refused). Artifact export was
+still exercised end-to-end on **completed Telco graph runs** through the
+real FastAPI app using the suite's heuristic LLM double (same path as
+the rest of pytest): POST `/runs` → completed + `validation.valid` →
+POST `/runs/{id}/artifacts` → `VERIFIED` + `pipeline.joblib` download.
+
+That is **not** a live-qwen3:4b demonstration. Do not treat Phase 3 as
+production-ready packaging for unattended Ollama runs.
+
+### Trust boundary (re-checked)
+
+- `validate_proposed_plan()` remains the sole structural authority.
+- Invalid/failed/unsafe runs cannot produce a VERIFIED bundle.
+- Export never calls `generate_plan()` / Ollama and never invokes LangGraph.
+- Inference from `pipeline.py` + `pipeline.joblib` has no PIPER imports.
+
+### Known limitations (Phase 3)
+
+- Fitted pipelines still live in **in-memory** `ModelStore`. After a
+  process restart, export fails as `winning_pipeline_unavailable`
+  rather than silently rebuilding from the LLM plan.
+- Reproduction notebook documents executed config; it is not a
+  substitute for the parity-gated joblib.
+- Live Ollama → artifact demo was not completed in this session
+  (Ollama not running).
+
 ### Remaining work
 
 - Batch 3 — measured planner work, classification+regression, adversarial
   benchmark, docs. Do not endlessly tune qwen3:4b/8b.
+- Governance, fairness, OpenTelemetry, Redis/Celery, PostgreSQL, and
+  multi-tenancy are **not** started.
 
 ---
 

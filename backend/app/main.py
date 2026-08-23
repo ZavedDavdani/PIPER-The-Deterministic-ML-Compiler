@@ -28,6 +28,7 @@ from __future__ import annotations
 
 import os
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -76,6 +77,9 @@ async def lifespan(app: FastAPI):
     app.state.run_store = create_run_store()
     app.state.exploration_store = InMemoryExplorationStore()
     app.state.llm_provider = OllamaProvider()
+    artifact_root = Path(os.environ.get("PIPER_ARTIFACT_DIR", "artifacts"))
+    artifact_root.mkdir(parents=True, exist_ok=True)
+    app.state.artifact_dir = artifact_root
     yield
 
 
