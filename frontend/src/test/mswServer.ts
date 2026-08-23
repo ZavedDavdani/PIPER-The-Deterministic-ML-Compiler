@@ -258,6 +258,45 @@ export const handlers = [
       evidence,
     })
   }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/artifacts`, ({ params }) => {
+    return HttpResponse.json({
+      run_id: String(params.runId),
+      artifact_status: 'NOT_GENERATED',
+      parity_status: 'not_run',
+      winning_model_id: null,
+      algorithm: null,
+      files: [],
+      error: null,
+      created_at: null,
+    })
+  }),
+
+  http.post(`${API_BASE_URL}/runs/:runId/artifacts`, ({ params }) => {
+    if (runStatusOverride !== 'completed') {
+      return HttpResponse.json({ detail: { code: 'run_not_verified', message: 'Run is not eligible.' } }, { status: 409 })
+    }
+    return HttpResponse.json(
+      {
+        run_id: String(params.runId),
+        artifact_status: 'VERIFIED',
+        parity_status: 'passed',
+        winning_model_id: 'model_lr001',
+        algorithm: 'logistic_regression',
+        files: [
+          'pipeline.joblib',
+          'pipeline.py',
+          'training_reproduction.ipynb',
+          'manifest.json',
+          'evidence.json',
+          'hashes.json',
+        ],
+        error: null,
+        created_at: '2026-08-23T00:00:00Z',
+      },
+      { status: 201 },
+    )
+  }),
 ]
 
 export const server = setupServer(...handlers)

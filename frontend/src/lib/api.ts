@@ -14,6 +14,8 @@ import type {
   RunListResponse,
   RunResultResponse,
   RunStatusResponse,
+  ArtifactStatusResponse,
+  ArtifactFileListResponse,
 } from './types'
 
 /**
@@ -123,4 +125,22 @@ export function updateOllamaConfig(body: { model?: string; host?: string }): Pro
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),
   })
+}
+
+export function getArtifactStatus(runId: string): Promise<ArtifactStatusResponse> {
+  return request<ArtifactStatusResponse>(`/runs/${encodeURIComponent(runId)}/artifacts`)
+}
+
+export function generateArtifacts(runId: string): Promise<ArtifactStatusResponse> {
+  return request<ArtifactStatusResponse>(`/runs/${encodeURIComponent(runId)}/artifacts`, {
+    method: 'POST',
+  })
+}
+
+export function listArtifactFiles(runId: string): Promise<ArtifactFileListResponse> {
+  return request<ArtifactFileListResponse>(`/runs/${encodeURIComponent(runId)}/artifacts/files`)
+}
+
+export function artifactFileUrl(runId: string, filename: string): string {
+  return `${API_BASE_URL}/runs/${encodeURIComponent(runId)}/artifacts/files/${encodeURIComponent(filename)}`
 }

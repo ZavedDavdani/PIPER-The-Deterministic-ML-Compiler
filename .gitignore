@@ -21,6 +21,9 @@ dist/
 *.sqlite
 data/piper_runs.sqlite
 
+# Phase 3 exported ML artifacts (generated locally at repo root)
+/artifacts/
+
 # OS
 .DS_Store
 
