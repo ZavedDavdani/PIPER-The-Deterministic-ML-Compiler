@@ -35,6 +35,7 @@ class TestInstantiationAndDefaults:
     def test_all_logs_default_to_empty_lists(self):
         state = AgentState(run_id="r", dataset_id="d", target_column="Churn")
         assert state.plan == []
+        assert state.planning_attempts == []
         assert state.cleaning_log == []
         assert state.feature_log == []
         assert state.tool_trace == []

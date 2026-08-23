@@ -31,6 +31,7 @@ from app.agent.plan_adequacy import classify_plan_steps, evaluate_plan_adequacy
 from app.agent.plan_canonical import canonicalize_plan
 from app.agent.plan_diff import diff_plans
 from app.agent.plan_validation import ALLOWED_TOOL_NAMES, TOOL_ARGUMENT_SCHEMAS, validate_proposed_plan
+from app.agent.productization import make_planning_attempt
 from app.agent.state import AgentState, OperationRecord, PlanStep, ToolTraceEntry
 from app.agent.tools import (
     build_sanitized_llm_context,
@@ -269,6 +270,14 @@ def _carried_forward_preserved_steps(state: AgentState) -> dict:
     return carried
 
 
+def _with_planning_attempt(state: AgentState, payload: dict, **kwargs) -> dict:
+    """Append-only productization log. Does not change routing or validation."""
+    payload["planning_attempts"] = list(state.planning_attempts) + [
+        make_planning_attempt(attempt=state.retry_count, **kwargs)
+    ]
+    return payload
+
+
 def plan_node_v2(
     state: AgentState,
     store: DatasetStore,
@@ -436,7 +445,13 @@ def plan_node_v2(
             retryable=True,
             human_intervention_required=False,
         )
-        return {"status": "failed", "error": failure.message, "failure": failure}
+        return _with_planning_attempt(
+            state,
+            {"status": "failed", "error": failure.message, "failure": failure},
+            steps=[],
+            structurally_valid=False,
+            outcome="provider_error",
+        )
 
     validation_result = validate_proposed_plan(provider_result.plan.steps, state.target_column)
 
@@ -501,7 +516,15 @@ def plan_node_v2(
                 retryable=False,
                 human_intervention_required=True,
             )
-            return {"status": "failed", "error": failure.message, "failure": failure}
+            return _with_planning_attempt(
+                state,
+                {"status": "failed", "error": failure.message, "failure": failure},
+                steps=provider_result.plan.steps,
+                structurally_valid=False,
+                outcome="duplicate",
+                plan_hash=rejected_hash,
+                violation_count=len(validation_result.violations),
+            )
 
         failure = FailureInfo(
             category="EVALUATION_ERROR",
@@ -515,12 +538,20 @@ def plan_node_v2(
             retryable=True,
             human_intervention_required=False,
         )
-        return {
-            "status": "failed",
-            "error": failure.message,
-            "failure": failure,
-            "plan_history": state.plan_history + [rejected_hash],
-        }
+        return _with_planning_attempt(
+            state,
+            {
+                "status": "failed",
+                "error": failure.message,
+                "failure": failure,
+                "plan_history": state.plan_history + [rejected_hash],
+            },
+            steps=provider_result.plan.steps,
+            structurally_valid=False,
+            outcome="invalid",
+            plan_hash=rejected_hash,
+            violation_count=len(validation_result.violations),
+        )
 
     # Only NOW, after the proposal has survived provider-level success
     # AND deterministic tool/argument validation, is it turned into
@@ -566,13 +597,20 @@ def plan_node_v2(
             retryable=False,
             human_intervention_required=True,
         )
-        return {
-            "status": "failed",
-            "plan": plan,
-            "plan_history": state.plan_history + [candidate_hash],
-            "failure": failure,
-            "error": failure.message,
-        }
+        return _with_planning_attempt(
+            state,
+            {
+                "status": "failed",
+                "plan": plan,
+                "plan_history": state.plan_history + [candidate_hash],
+                "failure": failure,
+                "error": failure.message,
+            },
+            steps=plan,
+            structurally_valid=True,
+            outcome="duplicate",
+            plan_hash=candidate_hash,
+        )
 
     # --- Plan adequacy (deterministic, read-only) ----------------------
     # Structural validity (validate_proposed_plan, above) proves every
@@ -627,18 +665,35 @@ def plan_node_v2(
             retryable=True,
             human_intervention_required=False,
         )
-        return {
-            "status": "failed",
-            "error": failure.message,
-            "failure": failure,
-            "plan_history": state.plan_history + [candidate_hash],
-        }
+        return _with_planning_attempt(
+            state,
+            {
+                "status": "failed",
+                "error": failure.message,
+                "failure": failure,
+                "plan_history": state.plan_history + [candidate_hash],
+            },
+            steps=plan,
+            structurally_valid=True,
+            outcome="inadequate",
+            plan_hash=candidate_hash,
+            adequacy_status="FAIL",
+            material_finding_count=len(adequacy.material_findings),
+        )
 
-    return {
-        "status": "running",
-        "plan": plan,
-        "plan_history": state.plan_history + [candidate_hash],
-    }
+    return _with_planning_attempt(
+        state,
+        {
+            "status": "running",
+            "plan": plan,
+            "plan_history": state.plan_history + [candidate_hash],
+        },
+        steps=plan,
+        structurally_valid=True,
+        outcome="accepted",
+        plan_hash=candidate_hash,
+        adequacy_status="PASS",
+    )
 
 
 def feature_engineer_node(state: AgentState, store: DatasetStore) -> dict:
