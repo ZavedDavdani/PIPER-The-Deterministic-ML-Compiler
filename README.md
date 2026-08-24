@@ -87,7 +87,7 @@ independent of how `max_retries` is configured.
 2. **Local Run Store & Replay** (`app/storage/sqlite_run_store.py`):
    SQLite persistence for run metadata, events, and evidence. Deterministic run replay without invoking the LLM.
 3. **Artifact Bundles & Parity Gate** (`app/artifacts/`):
-   Exports self-contained pipeline bundles (`pipeline.joblib`, `pipeline.py`, `training_reproduction.ipynb`, `manifest.json`, `evidence.json`, `hashes.json`). Verification gate guarantees mathematical parity against training test data before publishing.
+   Exports self-contained pipeline bundles (`pipeline.joblib`, `pipeline.py`, `training_reproduction.ipynb`, `manifest.json`, `evidence.json`, `hashes.json`). Verification gate guarantees exact holdout prediction parity (`np.array_equal`) between the in-memory fitted pipeline and reloaded joblib artifact before publishing.
 4. **Model Governance & Data Cards** (`app/governance/`):
    Deterministic model cards, dataset cards, SHA-256 fingerprinting, feature importance, and on-demand demographic subgroup fairness analysis.
 5. **Deployment & Test Flight** (`app/deployment/`):
