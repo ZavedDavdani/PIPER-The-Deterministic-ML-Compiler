@@ -11,6 +11,7 @@ from pathlib import Path
 from typing import Any
 
 import joblib
+import pandas as pd
 
 from app.agent.productization import build_evidence_export
 from app.artifacts.eligibility import require_eligible_run
@@ -218,6 +219,15 @@ def publish_run_artifacts(
         )
 
         created_at = datetime.now(timezone.utc).isoformat()
+        smoke = x_holdout.iloc[0].to_dict()
+        smoke_row = {}
+        for key, value in smoke.items():
+            if pd.isna(value):
+                smoke_row[str(key)] = None
+            elif hasattr(value, "item"):
+                smoke_row[str(key)] = value.item()
+            else:
+                smoke_row[str(key)] = value
         manifest = {
             "run_id": run_id,
             "dataset_id": record.dataset_id,
@@ -229,6 +239,7 @@ def publish_run_artifacts(
                 "numeric_columns": list(meta.numeric_columns),
             },
             "expected_inference_columns": list(meta.feature_columns),
+            "inference_smoke_row": smoke_row,
             "winning_model": {
                 "model_id": winner_id,
                 "algorithm": meta.algorithm,

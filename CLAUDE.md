@@ -368,6 +368,181 @@ The 5 skips remain the real-Ollama integration tests (`PIPER_RUN_OLLAMA_TESTS=1`
 
 ---
 
+## V1.2 Phase 5 — Deployment & Test Flight (COMPLETE on branch `v1.2-productization`)
+
+Implemented 2026-08-24 on `v1.2-productization` only — **`master` was not
+modified.** Independently audited and verified. All 14 security and trust-boundary
+invariants verified. One local Git commit on `v1.2-productization`.
+
+PIPER scores **NEW UNSEEN DATA** with a **VERIFIED** `pipeline.joblib`.
+This does **not** change `validate_proposed_plan()`, routing, REPLAN,
+artifact publish parity, governance, or planner reliability. qwen3:4b
+remains **2/10**. Inference does **not** call Ollama, LangGraph, or
+`generate_plan()`, and does **not** retrain.
+
+### Inference architecture
+
+```
+PIPER run (completed + guardrails valid)
+  → POST /runs/{id}/artifacts  (Phase 3, VERIFIED + joblib parity)
+  → GET  /runs/{id}/deployment (readiness: hashes, load, smoke predict, inference parity)
+  → POST /predict  or  POST /runs/{id}/test-flight
+  → load pipeline.joblib only
+  → schema check
+  → pipeline.predict()
+  → independent joblib.reload().predict() must match (fail closed)
+```
+
+Source of truth is the **on-disk VERIFIED joblib**, never a rebuilt LLM
+plan. Generated `pipeline.py` / `inference.py` are **never exec'd** by
+the PIPER backend.
+
+Package: `backend/app/deployment/` (`loader`, `schema`, `predict`,
+`csv_io`, `readiness`, `package`, `inference_script`, `paths`, `errors`).
+
+### Features implemented
+
+1. **Standalone inference** — `load_verified_bundle()` requires
+   `artifact_status == VERIFIED`, valid `manifest.json`, SHA-256 match
+   against `hashes.json`, and `joblib.load(pipeline.joblib)`. Missing
+   required columns / empty / oversized / non-object rows raise
+   structured `InferenceError`. `run_id` is allowlisted
+   (`[A-Za-z0-9_-]+`); user filesystem paths are not accepted.
+2. **POST `/predict`** — JSON `{run_id, rows: [...]}`. Returns
+   predictions, row count, model/artifact ids, `schema_status: valid`,
+   `data_kind: NEW_UNSEEN_DATA`, and a small sample. Unknown `run_id`
+   is 404.
+3. **Batch CSV (Test Flight)** — `POST /runs/{id}/test-flight` (JSON
+   summary) and `POST /runs/{id}/test-flight.csv` (download). CSV only,
+   100MB cap. Upload bytes are not mutated; predictions are written to
+   a **copy**.
+4. **Test Flight UI** — `TestFlightPanel` on the terminal run page.
+   Distinguishes **TRAINING DATA** vs **NEW UNSEEN DATA**. Upload CSV →
+   score → sample rows → download `predictions.csv`. Optional
+   deployment-package download. Does not retrain.
+5. **Inference parity** — after scoring, a second `joblib.load` +
+   `.predict()` on the same frame must `np.array_equal`. Mismatch →
+   `inference_parity_failed`, no silent repair, deployment not READY.
+6. **Optional deployment package** —
+   `POST /runs/{id}/deployment/package` writes
+   `artifacts/{run_id}/deployment_package/`: `pipeline.joblib`,
+   `inference.py` (no `from app` / LangGraph / Ollama),
+   `requirements.txt`, `README.md`, **optional** `Dockerfile`
+   (`python:3.11-slim` only). Docker is optional. No Redis/Celery/
+   Postgres/K8s.
+7. **Readiness** — `GET /runs/{id}/deployment` is `READY` only after
+   artifact exists, VERIFIED, manifest valid, hashes valid, pipeline
+   loads, schema present, smoke-row prediction succeeds, and inference
+   parity passes. Smoke row is recorded in `manifest.json` as
+   `inference_smoke_row` at artifact publish time (first holdout
+   feature row). Fail closed → `NOT_READY`.
+
+### APIs
+
+| Method | Path | Behavior |
+|---|---|---|
+| POST | `/predict` | JSON rows → predictions. VERIFIED artifact only. |
+| GET | `/runs/{id}/deployment` | Deterministic READY / NOT_READY. |
+| POST | `/runs/{id}/deployment/package` | Optional standalone package (201). |
+| GET | `/runs/{id}/deployment/package/files/{filename}` | Allowlisted names only; path traversal 404. |
+| POST | `/runs/{id}/test-flight` | Unseen CSV → JSON predictions. |
+| POST | `/runs/{id}/test-flight.csv` | Unseen CSV → `predictions.csv` download. |
+
+### Security controls (Phase 5)
+
+- No arbitrary model path from the client.
+- Only PIPER-registered `run_id`s under `PIPER_ARTIFACT_DIR`.
+- No `exec` of `pipeline.py` or generated `inference.py` in the API.
+- Package/artifact downloads are filename-allowlisted.
+- CSV type + 100MB size checks.
+- Test Flight / `/predict` never call `train_model()` or the planner.
+
+### Tests and exact results (Phase 5)
+
+| Suite | Result |
+|---|---|
+| Focused `tests/test_deployment.py` | **13 passed** (verified load, unverified/missing reject, missing features, invalid/empty schema, non-CSV, CSV output without mutating input, inference parity fail-closed, corrupted joblib, no LLM/LangGraph imports, no retrain, package+Dockerfile standalone, readiness READY, API predict/test-flight/package/404/traversal/400) |
+| **Full backend regression** | **991 passed, 5 skipped, 0 failures** (27m19s, `.venv`, 2026-08-24) |
+| Frontend Vitest | **34 passed** (9 files), 2026-08-24 |
+| Frontend `npm run build` | **PASS** (chunk-size advisory only) |
+
+Delta vs Phase 4 **978 passed / 5 skipped**: **+13 tests** (all in
+`test_deployment.py`). Artifact API regression (`test_artifacts.py`)
+re-run as part of the 991; one import regression
+(`ArtifactEligibilityError` in `runs.py`) was found and fixed before
+the full suite. No existing tests were deleted or weakened.
+
+The 5 skips remain the real-Ollama integration tests
+(`PIPER_RUN_OLLAMA_TESTS=1`).
+
+### Real demo / Ollama
+
+Ollama **was reachable** (`GET http://127.0.0.1:11434/api/tags` → 200;
+`qwen3:4b` installed). One genuine live attempt was run through the
+real FastAPI app + real `OllamaProvider` (harness:
+`backend/_phase5_ollama_demo.py`, not pytest):
+
+| Field | Value |
+|---|---|
+| run_id | `run_b0432b87` |
+| Dataset | Telco CSV upload (201) |
+| Wall time | **~27.5 min** (`elapsed=1645.6s` at `POST /runs` return) |
+| Terminal status | **`failed`** |
+| `validation.valid` | **null** (VALIDATE never produced a result) |
+| Failure | `EVALUATION_ERROR` / `provider_error_code: timeout` — `"Ollama did not respond within 600.0s."` |
+| node / attempt | `plan` / **2** (`retryable: true`, `human_intervention_required: true`) |
+| Artifacts / `/predict` / Test Flight | **not reached** |
+
+This is **not** a live-qwen3:4b Phase 5 success. It is consistent with
+the frozen V1 2/10 planner reliability and the 600s Ollama timeout.
+Fixture/heuristic coverage (same path as the rest of pytest) is what
+the **991** count measures. Do not fabricate a completed Test Flight
+from this run.
+
+### Trust boundary (re-checked)
+
+- `validate_proposed_plan()` remains the sole structural authority.
+- Unverified / FAILED / missing artifacts cannot score.
+- Inference never calls `generate_plan()` / Ollama and never invokes
+  LangGraph.
+- Inference never retrains; it only calls `.predict()` on the loaded
+  joblib.
+- Parity failure does not repair the artifact or the predictions.
+
+### Known limitations (Phase 5)
+
+- Fitted pipelines for **artifact generation** still live in in-memory
+  `ModelStore`. After process restart, `POST /artifacts` fails rather
+  than rebuilding from the LLM plan. A **already-written VERIFIED
+  bundle** can still be used for `/predict` from disk.
+- `inference_smoke_row` is one recorded holdout feature row, not a
+  privacy-reviewed sample policy.
+- Live Ollama → Test Flight demo was attempted once (`run_b0432b87`)
+  and **failed at PLAN** with a 600s Ollama timeout after attempt 2.
+  Artifacts and Test Flight were not reached. Live end-to-end qwen3
+  verification remains unsuccessful due to the known planner limitation.
+- Test Flight UI was verified with Vitest/MSW, not a live browser
+  session against a running stack.
+- Phase 5 is checkpointed locally on `v1.2-productization`.
+
+### Remaining work (Phase 5 close-out)
+
+1. **Phase 5 checkpoint committed** on `v1.2-productization`. Scratch demo harness
+   `backend/_phase5_ollama_demo.py` removed.
+2. Optional: live browser pass of Test Flight on `/runs/:id` (upload
+   unseen CSV, download predictions).
+3. Do NOT attempt indefinite live Ollama runs without planner reliability improvements.
+
+### Remaining work (after Phase 5)
+
+- Batch 3 — measured planner work, classification+regression, adversarial
+  benchmark, docs. Do not endlessly tune qwen3:4b/8b.
+- OpenTelemetry, Redis/Celery, PostgreSQL, Kubernetes, Prometheus,
+  multi-tenancy, and authentication/quotas are **not** started and were
+  explicitly out of Phase 5 scope.
+
+---
+
 ## V1 ARCHITECTURE FROZEN (frozen 2026-08-15; independently re-audited and re-verified 2026-08-17)
 
 PIPER V1 is **COMPLETE AND FROZEN**. The architecture below has been

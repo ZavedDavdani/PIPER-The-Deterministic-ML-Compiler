@@ -266,7 +266,7 @@ export interface TraceEvent {
 }
 
 export interface ApiErrorBody {
-  detail: string
+  detail: string | { code?: string; message?: string; details?: unknown }
 }
 
 // --- V1.2 productization (decision trace / verdict / intervention / evidence) ---
@@ -547,4 +547,36 @@ export interface GovernanceBundle {
   limitations: string[]
   artifact_status: Record<string, unknown> | null
   notes: string[]
+}
+
+export interface PredictResponse {
+  run_id: string
+  artifact_id: string
+  winning_model_id: string | null
+  algorithm: string | null
+  row_count: number
+  predictions: unknown[]
+  schema_status: 'valid'
+  required_columns: string[]
+  parity: { parity_status: string; mismatched_rows?: number; row_count?: number }
+  data_kind: 'NEW_UNSEEN_DATA'
+  sample: Record<string, unknown>[]
+}
+
+export interface DeploymentReadinessResponse {
+  run_id: string
+  status: 'READY' | 'NOT_READY'
+  artifact_status: string | null
+  winning_model_id: string | null
+  algorithm: string | null
+  required_columns: string[]
+  checks: { check: string; passed: boolean; detail: string | null }[]
+  reason: { code?: string; message?: string } | null
+}
+
+export interface DeploymentPackageResponse {
+  run_id: string
+  status: string
+  files: string[]
+  docker_optional: boolean
 }
