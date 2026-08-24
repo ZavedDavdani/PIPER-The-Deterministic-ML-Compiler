@@ -14,6 +14,7 @@ import type {
   HumanInterventionPackage,
   PiperVerdict,
   RunStatusResponse,
+  GovernanceBundle,
 } from '@/lib/types'
 
 /**
@@ -257,6 +258,86 @@ export const handlers = [
       intervention: evidence.intervention,
       evidence,
     })
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/governance`, ({ params }) => {
+    if (runStatusOverride !== 'completed' && runStatusOverride !== 'failed') {
+      return HttpResponse.json({ detail: 'still running' }, { status: 409 })
+    }
+    const runId = String(params.runId)
+    const importance = {
+      status: 'NOT_AVAILABLE' as const,
+      method: 'NOT_AVAILABLE',
+      algorithm: null,
+      rows: [],
+      disclaimer: 'These scores describe association, not causal effects.',
+      reason: 'MSW fixture has no fitted pipeline.',
+    }
+    const body: GovernanceBundle = {
+      schema_version: 'piper.governance.v1',
+      run_id: runId,
+      run_status: runStatusOverride,
+      model_card: {
+        status: runStatusOverride === 'completed' ? 'AVAILABLE' : 'NOT_AVAILABLE',
+        run_id: runId,
+        dataset_id: fixtureDatasetProfile.dataset_id,
+        task_type: 'binary_classification',
+        target: 'Churn',
+        winning_model_id: runStatusOverride === 'completed' ? 'model_lr001' : null,
+        winning_algorithm: runStatusOverride === 'completed' ? 'logistic_regression' : null,
+        candidate_models: [],
+        evaluation_metrics: runStatusOverride === 'completed' ? [{ name: 'f1', value: 0.5 }] : [],
+        baseline_comparison: null,
+        train_test_split: null,
+        preprocessing_summary: [],
+        guardrail_results: [],
+        limitations: ['MSW fixture.'],
+        artifact_information: { artifact_status: 'NOT_GENERATED' },
+        feature_importance: importance,
+        reason: null,
+      },
+      data_card: {
+        status: 'AVAILABLE',
+        run_id: runId,
+        dataset_id: fixtureDatasetProfile.dataset_id,
+        rows: fixtureDatasetProfile.rows,
+        columns: fixtureDatasetProfile.columns,
+        target: 'Churn',
+        feature_list: [],
+        column_summaries: [],
+        numeric_features: [],
+        categorical_features: [],
+        missingness: [],
+        preprocessing_operations: [],
+        train_test: null,
+        data_quality_findings: [],
+        limitations: [],
+        reason: null,
+      },
+      fingerprints: {
+        run_id: runId,
+        hash_algorithm: 'sha256',
+        content_hashes: [],
+        metadata: {},
+        caveat: 'These fingerprints are tamper-evident content hashes.',
+      },
+      feature_importance: importance,
+      fairness: {
+        status: 'NOT_REQUESTED',
+        requested_columns: [],
+        minimum_group_size: 30,
+        positive_class: null,
+        reference_group_rule: 'largest-n group',
+        groups: [],
+        warnings: [],
+        disclaimer: 'Statistical subgroup measurements, not a legal compliance decision.',
+        reason: 'No subgroup columns were supplied.',
+      },
+      limitations: [],
+      artifact_status: { artifact_status: 'NOT_GENERATED' },
+      notes: ['LLM chain-of-thought is intentionally omitted.'],
+    }
+    return HttpResponse.json(body)
   }),
 
   http.get(`${API_BASE_URL}/runs/:runId/artifacts`, ({ params }) => {
