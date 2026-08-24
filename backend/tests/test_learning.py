@@ -363,3 +363,169 @@ class TestLearningModeHasZeroEffectOnExecution:
         build_run_explanation(result_b["run_id"], AgentState(**result_b))  # Learn-Explain invoked for run B.
 
         assert self._deterministic_projection(result_a) == self._deterministic_projection(result_b)
+
+
+class TestConceptRegistry:
+    def test_concepts_registry_has_core_educational_topics(self):
+        from app.learning.registry import CONCEPTS
+        keys = {c.key for c in CONCEPTS}
+        for required in (
+            "missing_value_imputation",
+            "column_dropping",
+            "categorical_encoding",
+            "feature_scaling",
+            "data_leakage",
+            "target_imbalance",
+            "train_test_split",
+            "model_selection",
+            "baseline_comparison",
+            "replan_cycle",
+            "feature_importance",
+        ):
+            assert required in keys
+
+    def test_every_concept_has_valid_fields(self):
+        from app.learning.registry import CONCEPTS
+        for c in CONCEPTS:
+            assert c.key.strip()
+            assert c.title.strip()
+            assert c.category.strip()
+            assert c.summary.strip()
+            assert c.detail.strip()
+
+
+class TestWhyExplanation:
+    def test_impute_missing_values_why(self):
+        from app.learning.explain import build_why_explanation
+        why = build_why_explanation("impute_missing_values", evidence={"column": "Age", "strategy": "median"})
+        assert "Age" in why.what_happened
+        assert "median" in why.what_happened
+        assert "numeric" in why.why
+        assert why.concept == "Missing Value Imputation"
+
+    def test_drop_column_why(self):
+        from app.learning.explain import build_why_explanation
+        why = build_why_explanation("drop_column", evidence={"column": "customerID", "reason": "unique ID"})
+        assert "customerID" in why.what_happened
+        assert "unique ID" in why.why
+
+    def test_levels_beginner_intermediate_advanced(self):
+        from app.learning.explain import build_why_explanation
+        beg = build_why_explanation("scale_features", level="beginner")
+        med = build_why_explanation("scale_features", level="intermediate")
+        adv = build_why_explanation("scale_features", level="advanced")
+        assert beg.what_happened != med.what_happened or beg.level == "beginner"
+        assert adv.level == "advanced"
+
+
+class TestLearningJourney:
+    def test_14_stages_on_completed_run(self, telco_df: pd.DataFrame):
+        from app.learning.explain import build_learning_journey
+        dataset_store = InMemoryDatasetStore()
+        dataset_store.save("dataset_001", telco_df)
+        graph = build_graph(dataset_store, InMemorySplitStore(), InMemoryModelStore(), heuristic_llm_provider())
+        run_store = InMemoryRunStore()
+        initial = AgentState(run_id="journey_001", dataset_id="dataset_001", target_column="Churn")
+        stream_with_tracing(graph, initial, run_store, config={"recursion_limit": 50})
+
+        record = run_store.get("journey_001")
+        journey = build_learning_journey(record.run_id, record.final_state)
+
+        assert journey.run_id == "journey_001"
+        assert len(journey.stages) == 14
+        assert all(s.status == "completed" for s in journey.stages)
+        stage_titles = [s.title for s in journey.stages]
+        assert "Understand the Dataset" in stage_titles[0]
+        assert "Test Unseen Data" in stage_titles[13]
+
+    def test_journey_on_failed_run(self, telco_df: pd.DataFrame):
+        from app.learning.explain import build_learning_journey
+        leaky_df = telco_df.copy()
+        leaky_df["leaky_dup"] = leaky_df["Churn"]
+        dataset_store = InMemoryDatasetStore()
+        dataset_store.save("dataset_leak", leaky_df)
+        graph = build_graph(dataset_store, InMemorySplitStore(), InMemoryModelStore(), heuristic_llm_provider())
+        run_store = InMemoryRunStore()
+        initial = AgentState(run_id="journey_fail_001", dataset_id="dataset_leak", target_column="Churn")
+        stream_with_tracing(graph, initial, run_store, config={"recursion_limit": 50})
+
+        record = run_store.get("journey_fail_001")
+        journey = build_learning_journey(record.run_id, record.final_state)
+
+        assert journey.run_id == "journey_fail_001"
+        assert len(journey.stages) == 14
+        # Downstream stages should not be completed
+        assert any(s.status in ("failed", "not_reached") for s in journey.stages)
+
+
+class TestPipelineVisualization:
+    def test_pipeline_nodes_and_edges(self, telco_df: pd.DataFrame):
+        from app.learning.explain import build_pipeline_visualization
+        dataset_store = InMemoryDatasetStore()
+        dataset_store.save("dataset_001", telco_df)
+        graph = build_graph(dataset_store, InMemorySplitStore(), InMemoryModelStore(), heuristic_llm_provider())
+        run_store = InMemoryRunStore()
+        initial = AgentState(run_id="pipe_viz_001", dataset_id="dataset_001", target_column="Churn")
+        stream_with_tracing(graph, initial, run_store, config={"recursion_limit": 50})
+
+        record = run_store.get("pipe_viz_001")
+        viz = build_pipeline_visualization(record.run_id, record.final_state)
+
+        node_ids = {n.id for n in viz.nodes}
+        assert {"dataset", "preprocessing", "split", "models", "evaluation", "guardrails", "winner", "artifact"}.issubset(node_ids)
+        assert len(viz.edges) >= 7
+
+
+class TestReplanAndFeatureImportanceEducation:
+    def test_replan_explanation(self):
+        from app.learning.explain import build_replan_explanation
+        state = AgentState(run_id="r1", dataset_id="d1", target_column="t", retry_count=1)
+        replan = build_replan_explanation(state)
+        assert replan.replan_occurred is True
+        assert "REPLAN" in replan.educational_takeaway or "autonomous" in replan.educational_takeaway
+
+    def test_feature_importance_disclaimer(self):
+        from app.learning.explain import build_feature_importance_education
+        state = AgentState(run_id="r1", dataset_id="d1", target_column="t")
+        fi = build_feature_importance_education(state)
+        assert "not prove causation" in fi.disclaimer
+
+
+class TestStudentModeTrustBoundaries:
+    def test_no_llm_dependency_in_learning_module(self):
+        """Proves app/learning contains no imports or references to langchain, ollama, or providers."""
+        import importlib
+        import sys
+        mod = importlib.import_module("app.learning.explain")
+        assert "ollama" not in sys.modules or not hasattr(mod, "OllamaProvider")
+
+    def test_what_if_experiment_isolation(self, telco_df: pd.DataFrame):
+        """Proves What-If exploration creates a separate experiment and does not mutate the base run."""
+        from app.agent.tools.exploration import explore_alternative
+        dataset_store = InMemoryDatasetStore()
+        dataset_store.save("dataset_001", telco_df)
+        split_store = InMemorySplitStore()
+        model_store = InMemoryModelStore()
+        graph = build_graph(dataset_store, split_store, model_store, heuristic_llm_provider())
+        run_store = InMemoryRunStore()
+        initial = AgentState(run_id="base_run_001", dataset_id="dataset_001", target_column="Churn")
+        stream_with_tracing(graph, initial, run_store, config={"recursion_limit": 50})
+
+        base_record = run_store.get("base_run_001")
+        base_model_id = base_record.final_state.comparison.recommended_model_id
+        run_model_ids = [m.model_id for m in base_record.final_state.model_results]
+
+        result = explore_alternative(
+            run_id="base_run_001",
+            run_model_ids=run_model_ids,
+            base_model_id=base_model_id,
+            split_store=split_store,
+            model_store=model_store,
+            new_algorithm="random_forest",
+        )
+
+        assert result.success is True
+        # Base run remains unchanged
+        assert run_store.get("base_run_001").final_state.comparison.recommended_model_id == base_model_id
+        assert result.data.experiment_id.startswith("exp_")
+

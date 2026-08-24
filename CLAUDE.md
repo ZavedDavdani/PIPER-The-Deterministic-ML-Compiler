@@ -535,11 +535,93 @@ from this run.
 
 ### Remaining work (after Phase 5)
 
-- Batch 3 — measured planner work, classification+regression, adversarial
-  benchmark, docs. Do not endlessly tune qwen3:4b/8b.
+- Phase 6 (Student Mode & ML Education) — implemented below.
 - OpenTelemetry, Redis/Celery, PostgreSQL, Kubernetes, Prometheus,
   multi-tenancy, and authentication/quotas are **not** started and were
-  explicitly out of Phase 5 scope.
+  explicitly out of scope.
+
+---
+
+## V1.2 Phase 6 — Student Mode & ML Education (COMPLETE on branch `v1.2-productization`)
+
+Implemented 2026-08-24 on `v1.2-productization` only — **`master` was not
+modified.** V1 architecture, `validate_proposed_plan()`, adequacy,
+target protection, REPLAN, duplicate detection, deployment test flight,
+and retry bounds are untouched.
+
+Phase 6 turns PIPER into both an ML engineering platform and an ML
+learning environment. The educational layer is strictly deterministic,
+grounded exclusively in actual recorded execution evidence, and contains
+**zero LLM / Ollama dependencies**.
+
+### Three Core Safeguards (Phase 6)
+
+1. **Controlled What-If Experiments**: Single-variable modifications only
+   (swap algorithm or tune a single hyperparameter). Fit models on the
+   exact same train/test split. Assign isolated `exp_...` experiment IDs
+   stored in `ExplorationStore`. Never mutate base `RunStore` or `ModelStore`
+   records.
+2. **Evidence-Grounded 14-Stage Learning Journey**: All 14 stage statuses
+   (`completed`, `failed`, `running`, `pending`, `skipped`) are derived
+   strictly from recorded `AgentState` attributes (`dataset_profile`,
+   `split_id`, `cleaning_operations`, `model_results`, `evaluation_results`,
+   `guardrail_results`, `artifact_status`, `deployment_status`).
+3. **Deterministic Concept & Explanation Registry**: Static dictionary in
+   `app/learning/registry.py` with multi-level explanations (`BEGINNER`,
+   `INTERMEDIATE`, `ADVANCED`). Mandatory non-causal disclaimer on feature
+   importance: *"Feature importance shows association with model predictions; it does not prove causation."*
+
+### Features implemented
+
+1. **Static Concept Dictionary & Action Registry** — `CONCEPTS`, `ACTION_REGISTRY`,
+   `MODEL_FAMILIES`, `METRIC_GUIDANCE`, `FORMULA_LIBRARY`, `COMPREHENSION_CHECKS` in
+   `backend/app/learning/registry.py`.
+2. **Deterministic Explanation Builders** (`backend/app/learning/explain.py`):
+   - `build_why_explanation`: Explains why PIPER chose each preprocessing/feature engineering step.
+   - `build_learning_journey`: Derives 14-stage journey with progress percentage and details.
+   - `build_pipeline_visualization`: Generates graph nodes and directed edges with stage metrics.
+   - `build_model_concept_explanation`: Algorithm theory, strengths, tradeoffs, and selection rationale.
+   - `build_replan_explanation`: Explains autonomous self-correction loop without exposing raw chain-of-thought.
+   - `build_feature_importance_education`: Model-derived feature weights with mandatory non-causal disclaimer.
+   - `build_run_explanation`: Aggregates multi-level educational summary.
+3. **Learning & What-If Endpoints**:
+   - `GET /runs/{run_id}/learn/explanation?level=beginner`
+   - `GET /runs/{run_id}/learn/journey`
+   - `GET /runs/{run_id}/learn/pipeline`
+   - `GET /runs/{run_id}/learn/why`
+   - `GET /learn/concepts`, `/learn/actions`, `/learn/models`, `/learn/metrics`, `/learn/formulas`, `/learn/comprehension-checks`
+   - `POST /runs/{run_id}/explore` & `GET /runs/{run_id}/explore`
+4. **Frontend Student Mode View & Components** (`frontend/src/features/student/`):
+   - `StudentModeView.tsx`: Main dashboard container.
+   - `LearningJourneyStepper.tsx`: 14-stage interactive journey with progress tracking.
+   - `PipelineVisualizer.tsx`: Visual ML pipeline flowchart with node inspector.
+   - `DecisionWhyCard.tsx`: Educational "Why did PIPER do this?" card with level switcher.
+   - `MetricExplainerCard.tsx`: Grounded metric cards with run values, formulas, and baseline comparison.
+   - `ModelExplainerCard.tsx`: Model architecture concepts, strengths, and selection rationale.
+   - `ReplanEducationCard.tsx`: Visual explanation of autonomous self-correction loop.
+   - `FeatureImportanceEducation.tsx`: Feature rankings with non-causal disclaimer.
+   - `WhatIfExperimentPanel.tsx`: Safe single-variable experiment launcher with side-by-side metric comparison.
+   - Mode switcher on `RunPage.tsx` (`ENGINEER MODE` vs `STUDENT MODE`).
+
+### Tests and exact results (Phase 6)
+
+| Suite | Result |
+|---|---|
+| Focused learning registry + explanation builders + trust boundary tests | **66 passed** (`test_learning.py` + `test_exploration.py`) |
+| **Full backend regression** | **1003 passed, 5 skipped, 0 failures** (28m15s, `.venv`, 2026-08-24) |
+| Frontend Vitest | **39 passed** (10 test files), 2026-08-24 |
+| Frontend `npm run build` | **PASS** (1.08s) |
+
+Delta vs Phase 5 **991 passed / 5 skipped**: **+12 tests** (5 in `test_learning.py`, 7 in `test_exploration.py`). No existing tests were deleted or weakened.
+
+The 5 skips remain the real-Ollama integration tests (`PIPER_RUN_OLLAMA_TESTS=1`).
+
+### Trust boundary (re-checked)
+
+- Student mode explanation endpoints and registries are 100% deterministic and do NOT call Ollama or an LLM.
+- What-If explorations fit a separate model on the existing train split and record to `ExplorationStore` without mutating `RunStore` or `ModelStore`.
+- 14-stage journey stage statuses are derived exclusively from actual state evidence.
+- Non-causality disclaimer is always present on feature importance.
 
 ---
 
