@@ -20,8 +20,8 @@ import asyncio
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from fastapi.responses import FileResponse, StreamingResponse
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from app.agent import AgentState, build_graph
 from app.agent.productization import (
@@ -34,6 +34,11 @@ from app.agent.run_summary import build_run_summary
 from app.agent.timeline import build_execution_timeline
 from app.agent.tools.exploration import explore_alternative
 from app.agent.tracing import stream_with_tracing
+from app.governance import (
+    GOVERNANCE_DOCUMENT_NAMES,
+    assemble_governance_bundle,
+    render_governance_document,
+)
 from app.artifacts.errors import ArtifactEligibilityError, ArtifactParityError
 from app.artifacts.publisher import (
     DOWNLOADABLE_FILES,
@@ -71,6 +76,7 @@ from app.schemas.productization import (
     PiperVerdict,
     ReplayResponse,
 )
+from app.schemas.governance import FairnessReport, GovernanceBundle
 from app.schemas.run_summary import RunSummary
 from app.storage import (
     DatasetStore,
@@ -487,6 +493,122 @@ def replay_run(
         verdict=evidence.verdict,
         intervention=evidence.intervention,
         evidence=evidence,
+    )
+
+
+def _parse_subgroup_columns(column: list[str]) -> list[str]:
+    names: list[str] = []
+    for item in column:
+        names.extend(part.strip() for part in item.split(",") if part.strip())
+    return list(dict.fromkeys(names))
+
+
+def _require_terminal_run(run_id: str, run_store: InMemoryRunStore):
+    record = _load_run_or_404(run_id, run_store)
+    if record.status not in _TERMINAL_STATUSES or record.final_state is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_id}' is still '{record.status}' — no governance export yet.",
+        )
+    return record
+
+
+def _governance_for_record(
+    record,
+    *,
+    model_store: InMemoryModelStore,
+    split_store: SplitStore,
+    dataset_store: DatasetStore,
+    artifact_dir: Path,
+    subgroup_columns: list[str],
+) -> GovernanceBundle:
+    return assemble_governance_bundle(
+        record.run_id,
+        run_status=record.status,
+        state=record.final_state,
+        dataset_id=record.dataset_id,
+        model_store=model_store,
+        split_store=split_store,
+        dataset_store=dataset_store,
+        artifact_root=artifact_dir,
+        subgroup_columns=subgroup_columns,
+    )
+
+
+@router.get("/{run_id}/governance", response_model=GovernanceBundle)
+def get_run_governance(
+    run_id: str,
+    column: list[str] = Query(default=[]),
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    model_store: InMemoryModelStore = Depends(get_model_store),
+    split_store: SplitStore = Depends(get_split_store),
+    dataset_store: DatasetStore = Depends(get_dataset_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> GovernanceBundle:
+    """
+    Deterministic Model Card, Data Card, fingerprints, and optional
+    subgroup analysis. Never calls an LLM.
+    """
+    record = _require_terminal_run(run_id, run_store)
+    return _governance_for_record(
+        record,
+        model_store=model_store,
+        split_store=split_store,
+        dataset_store=dataset_store,
+        artifact_dir=artifact_dir,
+        subgroup_columns=_parse_subgroup_columns(column),
+    )
+
+
+@router.get("/{run_id}/governance/fairness", response_model=FairnessReport)
+def get_run_fairness(
+    run_id: str,
+    column: list[str] = Query(default=[]),
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    model_store: InMemoryModelStore = Depends(get_model_store),
+    split_store: SplitStore = Depends(get_split_store),
+    dataset_store: DatasetStore = Depends(get_dataset_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> FairnessReport:
+    record = _require_terminal_run(run_id, run_store)
+    bundle = _governance_for_record(
+        record,
+        model_store=model_store,
+        split_store=split_store,
+        dataset_store=dataset_store,
+        artifact_dir=artifact_dir,
+        subgroup_columns=_parse_subgroup_columns(column),
+    )
+    return bundle.fairness
+
+
+@router.get("/{run_id}/governance/documents/{filename}")
+def download_governance_document(
+    run_id: str,
+    filename: str,
+    column: list[str] = Query(default=[]),
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    model_store: InMemoryModelStore = Depends(get_model_store),
+    split_store: SplitStore = Depends(get_split_store),
+    dataset_store: DatasetStore = Depends(get_dataset_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> Response:
+    if filename not in GOVERNANCE_DOCUMENT_NAMES:
+        raise HTTPException(status_code=404, detail=f"Governance document '{filename}' is not published.")
+    record = _require_terminal_run(run_id, run_store)
+    bundle = _governance_for_record(
+        record,
+        model_store=model_store,
+        split_store=split_store,
+        dataset_store=dataset_store,
+        artifact_dir=artifact_dir,
+        subgroup_columns=_parse_subgroup_columns(column),
+    )
+    media, body = render_governance_document(bundle, filename)
+    return Response(
+        content=body,
+        media_type=media,
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
     )
 
 

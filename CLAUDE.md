@@ -265,12 +265,106 @@ production-ready packaging for unattended Ollama runs.
 - Live Ollama → artifact demo was not completed in this session
   (Ollama not running).
 
+### Remaining work (as of Phase 3)
+
+- Batch 3 — measured planner work, classification+regression, adversarial
+  benchmark, docs. Do not endlessly tune qwen3:4b/8b.
+- OpenTelemetry, Redis/Celery, PostgreSQL, and multi-tenancy are **not**
+  started.
+
+---
+
+## V1.2 Phase 4 — Governance, explainability & reproducibility (COMPLETE on branch `v1.2-productization`)
+
+Implemented 2026-08-24 on `v1.2-productization` only — **`master` was not
+modified.** Local Git checkpoint only.
+
+PIPER compiles **recorded executed evidence** into operator-facing Model
+Cards, Data Cards, SHA-256 fingerprints, sklearn-native feature
+importance, and optional subgroup measurements. This does **not** change
+`validate_proposed_plan()`, routing, REPLAN, artifact parity, or planner
+reliability. qwen3:4b remains **2/10**. Ollama is **not** called during
+governance.
+
+### Features implemented
+
+1. **Model Card** — `AVAILABLE` only when `status == "completed"` and
+   `validation.valid is True`. Metrics come from recorded evaluation /
+   comparison. Missing fields stay null. Failed/incomplete runs are
+   `NOT_AVAILABLE`; they are not given invented scores.
+2. **Data Card** — dimensions, target, features, dtypes, missingness,
+   executed preprocessing (`cleaning_log` / `feature_log`), split
+   metadata, recorded DQ findings. Profiling **sample cell values are
+   omitted**.
+3. **Fingerprints** — SHA-256 **content hashes** of the dataset CSV
+   serialization, executed CanonicalPlan, artifact files when present,
+   `requirements.txt`, and the recorded environment snapshot.
+   Reproducibility's existing dataset fingerprint is stored as
+   **metadata**, not mixed into content hashes. Caveat: tamper-evident,
+   not immutability.
+4. **Explainability** — from the fitted winning Pipeline only.
+   LogisticRegression: abs(coefficient) + sign. RandomForestClassifier:
+   impurity importance. One-hot names via
+   `ColumnTransformer.get_feature_names_out()`. Unsupported estimators
+   → `NOT_AVAILABLE`. Associative, not causal.
+5. **Fairness / subgroup analysis** — operator-specified columns only
+   (never inferred from names). `n < 30` yields a warning and **no
+   fabricated rates**. Statistical measurements, not legal findings.
+   Gaps do not auto-block a model.
+6. **Documents** — deterministic JSON/Markdown downloads from the
+   allowlist: `model_card.{json,md}`, `data_card.{json,md}`,
+   `fingerprints.json`, `feature_importance.json`, `fairness.json`.
+
+### APIs
+
+| Method | Path | Behavior |
+|---|---|---|
+| GET | `/runs/{id}/governance` | Bundle. Optional `?column=` subgroup list. Terminal only (409 otherwise). |
+| GET | `/runs/{id}/governance/fairness` | Subgroup report only. |
+| GET | `/runs/{id}/governance/documents/{filename}` | Allowlisted download. |
+
+### Frontend
+
+`GovernancePanel` on the terminal-run page: Model Card, Data Card,
+fingerprints, top features, optional subgroup form, limitations,
+artifact status, downloads.
+
+### Tests and exact results (Phase 4)
+
+| Suite | Result |
+|---|---|
+| Focused `tests/test_governance.py` | **17 passed** (cards, SHA-256 known digest, fingerprints, LR/RF importance, DummyClassifier `NOT_AVAILABLE`, fairness n-warning + sufficient groups + no name inference, no LLM imports, documents, API 200/404/409) |
+| **Full backend regression** | **978 passed, 5 skipped, 0 failures** (20m58s, `.venv`, 2026-08-24) |
+| Frontend Vitest | **32 passed** (8 files), 2026-08-24 |
+| Frontend `npm run build` | **PASS** (chunk-size advisory only) |
+
+Delta vs Phase 3 **961 passed / 5 skipped**: **+17 tests** (all in
+`test_governance.py`). No existing tests were deleted or weakened.
+
+The 5 skips remain the real-Ollama integration tests (`PIPER_RUN_OLLAMA_TESTS=1`).
+
+### Trust boundary (re-checked)
+
+- `validate_proposed_plan()` remains the sole structural authority.
+- Governance builders are read-only; they never mutate `state.plan`.
+- Invalid/failed/unsafe runs cannot produce an `AVAILABLE` model card.
+- Governance never calls `generate_plan()` / Ollama and never invokes
+  LangGraph.
+- Subgroup gaps never override guardrail validity.
+
+### Known limitations (Phase 4)
+
+- Fitted pipelines still live in **in-memory** `ModelStore`. After a
+  process restart, importance and fairness become `NOT_AVAILABLE`.
+- SHA-256 fingerprints are not a chain of custody.
+- Subgroup analysis is optional and statistical only.
+
 ### Remaining work
 
 - Batch 3 — measured planner work, classification+regression, adversarial
   benchmark, docs. Do not endlessly tune qwen3:4b/8b.
-- Governance, fairness, OpenTelemetry, Redis/Celery, PostgreSQL, and
-  multi-tenancy are **not** started.
+- OpenTelemetry, Redis/Celery, PostgreSQL, and multi-tenancy are **not**
+  started.
 
 ---
 

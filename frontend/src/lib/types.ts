@@ -413,3 +413,138 @@ export interface OllamaStatusResponse {
   models: string[]
   error: string | null
 }
+
+export type GovernanceAvailability = 'AVAILABLE' | 'NOT_AVAILABLE' | 'NOT_REQUESTED'
+export type FairnessStatus = 'AVAILABLE' | 'NOT_REQUESTED' | 'INSUFFICIENT_DATA' | 'NOT_AVAILABLE'
+
+export interface FeatureImportanceRow {
+  feature: string
+  transformed_feature: string
+  importance: number
+  direction: 'positive' | 'negative' | 'neutral' | null
+  source_feature: string | null
+}
+
+export interface FeatureImportanceReport {
+  status: GovernanceAvailability
+  method: string
+  algorithm: string | null
+  rows: FeatureImportanceRow[]
+  disclaimer: string
+  reason: string | null
+}
+
+export interface HashEntry {
+  name: string
+  kind: 'CONTENT_HASH' | 'METADATA'
+  algorithm: string
+  digest: string | null
+  available: boolean
+  reason: string | null
+}
+
+export interface FingerprintManifest {
+  run_id: string
+  hash_algorithm: string
+  content_hashes: HashEntry[]
+  metadata: Record<string, unknown>
+  caveat: string
+}
+
+export interface CandidateModelCardEntry {
+  model_id: string
+  algorithm: string
+  accuracy: number | null
+  precision: number | null
+  recall: number | null
+  f1: number | null
+  roc_auc: number | null
+  selected: boolean
+}
+
+export interface ModelCard {
+  status: GovernanceAvailability
+  run_id: string
+  dataset_id: string | null
+  task_type: string | null
+  target: string | null
+  winning_model_id: string | null
+  winning_algorithm: string | null
+  candidate_models: CandidateModelCardEntry[]
+  evaluation_metrics: { name: string; value: number | null }[]
+  baseline_comparison: Record<string, unknown> | null
+  train_test_split: Record<string, unknown> | null
+  preprocessing_summary: string[]
+  guardrail_results: { check: string; passed: boolean; severity: string; message: string }[]
+  limitations: string[]
+  artifact_information: Record<string, unknown> | null
+  feature_importance: FeatureImportanceReport
+  reason: string | null
+}
+
+export interface DataCard {
+  status: GovernanceAvailability
+  run_id: string
+  dataset_id: string | null
+  rows: number | null
+  columns: number | null
+  target: string | null
+  feature_list: string[]
+  column_summaries: {
+    name: string
+    dtype: string | null
+    missing_count: number | null
+    missing_percentage: number | null
+    unique_count: number | null
+    role: string
+    kind: string | null
+  }[]
+  numeric_features: string[]
+  categorical_features: string[]
+  missingness: Record<string, unknown>[]
+  preprocessing_operations: Record<string, unknown>[]
+  train_test: Record<string, unknown> | null
+  data_quality_findings: string[]
+  limitations: string[]
+  reason: string | null
+}
+
+export interface SubgroupMetricRow {
+  column: string
+  group: string
+  n: number
+  accuracy: number | null
+  precision: number | null
+  recall: number | null
+  f1: number | null
+  selection_rate: number | null
+  disparate_impact_ratio: number | null
+  sufficient: boolean
+  warning: string | null
+}
+
+export interface FairnessReport {
+  status: FairnessStatus
+  requested_columns: string[]
+  minimum_group_size: number
+  positive_class: string | null
+  reference_group_rule: string
+  groups: SubgroupMetricRow[]
+  warnings: string[]
+  disclaimer: string
+  reason: string | null
+}
+
+export interface GovernanceBundle {
+  schema_version: 'piper.governance.v1'
+  run_id: string
+  run_status: string
+  model_card: ModelCard
+  data_card: DataCard
+  fingerprints: FingerprintManifest
+  feature_importance: FeatureImportanceReport
+  fairness: FairnessReport
+  limitations: string[]
+  artifact_status: Record<string, unknown> | null
+  notes: string[]
+}

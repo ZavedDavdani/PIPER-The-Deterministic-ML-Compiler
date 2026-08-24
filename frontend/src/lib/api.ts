@@ -16,6 +16,8 @@ import type {
   RunStatusResponse,
   ArtifactStatusResponse,
   ArtifactFileListResponse,
+  GovernanceBundle,
+  FairnessReport,
 } from './types'
 
 /**
@@ -143,4 +145,31 @@ export function listArtifactFiles(runId: string): Promise<ArtifactFileListRespon
 
 export function artifactFileUrl(runId: string, filename: string): string {
   return `${API_BASE_URL}/runs/${encodeURIComponent(runId)}/artifacts/files/${encodeURIComponent(filename)}`
+}
+
+export function getGovernance(runId: string, columns: string[] = []): Promise<GovernanceBundle> {
+  const params = new URLSearchParams()
+  for (const column of columns) {
+    if (column.trim()) params.append('column', column.trim())
+  }
+  const suffix = params.size ? `?${params.toString()}` : ''
+  return request<GovernanceBundle>(`/runs/${encodeURIComponent(runId)}/governance${suffix}`)
+}
+
+export function getFairness(runId: string, columns: string[]): Promise<FairnessReport> {
+  const params = new URLSearchParams()
+  for (const column of columns) {
+    if (column.trim()) params.append('column', column.trim())
+  }
+  const suffix = params.size ? `?${params.toString()}` : ''
+  return request<FairnessReport>(`/runs/${encodeURIComponent(runId)}/governance/fairness${suffix}`)
+}
+
+export function governanceDocumentUrl(runId: string, filename: string, columns: string[] = []): string {
+  const params = new URLSearchParams()
+  for (const column of columns) {
+    if (column.trim()) params.append('column', column.trim())
+  }
+  const suffix = params.size ? `?${params.toString()}` : ''
+  return `${API_BASE_URL}/runs/${encodeURIComponent(runId)}/governance/documents/${encodeURIComponent(filename)}${suffix}`
 }
