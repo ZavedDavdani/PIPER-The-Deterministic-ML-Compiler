@@ -21,6 +21,15 @@ import type {
   PredictResponse,
   DeploymentReadinessResponse,
   DeploymentPackageResponse,
+  ExplanationLevel,
+  RunExplanation,
+  LearningJourney,
+  PipelineVisualization,
+  WhyExplanation,
+  FormulaEntry,
+  ComprehensionCheck,
+  ConceptDefinition,
+  ExplorationResult,
 } from './types'
 
 /**
@@ -224,3 +233,68 @@ export async function testFlightCsvBlob(runId: string, file: File): Promise<Blob
   }
   return response.blob()
 }
+
+// --- Phase 6: Student Mode & ML Education ------------------------------------
+
+export function getRunExplanation(
+  runId: string,
+  level: ExplanationLevel = 'beginner',
+): Promise<RunExplanation> {
+  return request<RunExplanation>(
+    `/runs/${encodeURIComponent(runId)}/learn/explanation?level=${encodeURIComponent(level)}`,
+  )
+}
+
+export function getLearningJourney(runId: string): Promise<LearningJourney> {
+  return request<LearningJourney>(`/runs/${encodeURIComponent(runId)}/learn/journey`)
+}
+
+export function getPipelineVisualization(runId: string): Promise<PipelineVisualization> {
+  return request<PipelineVisualization>(`/runs/${encodeURIComponent(runId)}/learn/pipeline`)
+}
+
+export function getWhyExplanation(
+  runId: string,
+  action: string,
+  column?: string,
+  level: ExplanationLevel = 'beginner',
+): Promise<WhyExplanation> {
+  const query = new URLSearchParams({
+    action,
+    level,
+    ...(column ? { column } : {}),
+  })
+  return request<WhyExplanation>(`/runs/${encodeURIComponent(runId)}/learn/why?${query.toString()}`)
+}
+
+export function getFormulas(): Promise<FormulaEntry[]> {
+  return request<FormulaEntry[]>('/learn/formulas')
+}
+
+export function getComprehensionChecks(): Promise<ComprehensionCheck[]> {
+  return request<ComprehensionCheck[]>('/learn/comprehension-checks')
+}
+
+export function getConcepts(): Promise<ConceptDefinition[]> {
+  return request<ConceptDefinition[]>('/learn/concepts')
+}
+
+export function createExploration(
+  runId: string,
+  params: {
+    base_model_id: string
+    new_algorithm?: string
+    hyperparameter_name?: string
+    hyperparameter_value?: unknown
+  },
+): Promise<ExplorationResult> {
+  return request<ExplorationResult>(`/runs/${encodeURIComponent(runId)}/explore`, {
+    method: 'POST',
+    body: JSON.stringify(params),
+  })
+}
+
+export function getExplorations(runId: string): Promise<ExplorationResult[]> {
+  return request<ExplorationResult[]>(`/runs/${encodeURIComponent(runId)}/explore`)
+}
+

@@ -391,6 +391,231 @@ export const handlers = [
       reason: { code: 'artifact_missing', message: 'No artifact bundle exists for this run.' },
     })
   }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/learn/explanation`, ({ params }) => {
+    return HttpResponse.json({
+      run_id: String(params.runId),
+      status: runStatusOverride,
+      level: 'beginner',
+      preprocessing: [
+        {
+          operation_id: 'op_1',
+          tool_name: 'impute_missing_values',
+          what_happened: 'PIPER replaced missing values in TotalCharges using the median.',
+          why: 'TotalCharges is numeric and contained nulls.',
+          level: 'beginner',
+          concept: 'Missing Value Imputation',
+          alternative_consideration: 'Dropping rows loses training data.',
+        },
+      ],
+      feature_engineering: [
+        {
+          operation_id: 'op_2',
+          tool_name: 'encode_categorical_features',
+          what_happened: 'PIPER converted categories into binary columns.',
+          why: 'Estimators require numeric input matrices.',
+          level: 'beginner',
+          concept: 'One-Hot Encoding',
+          alternative_consideration: 'Label encoding creates fake numeric order.',
+        },
+      ],
+      model_selection: {
+        recommended_model_id: 'model_lr001',
+        recommended_algorithm: 'logistic_regression',
+        justification: 'logistic_regression selected: F1=0.81 vs 0.76.',
+        candidates: [
+          {
+            model_id: 'model_lr001',
+            algorithm: 'logistic_regression',
+            accuracy: 0.82,
+            precision: 0.8,
+            recall: 0.82,
+            f1: 0.81,
+            roc_auc: 0.85,
+          },
+        ],
+        concept: 'Model Selection & Metric Optimization',
+      },
+      evaluation: [
+        {
+          model_id: 'model_lr001',
+          algorithm: 'logistic_regression',
+          metrics: [
+            {
+              metric: 'accuracy',
+              value: 0.82,
+              meaning: 'Accuracy = 0.8200 — The proportion of total predictions that were correct.',
+              formula: 'Accuracy = (TP + TN) / (TP + TN + FP + FN)',
+              guidance: 'Best when dataset is balanced.',
+            },
+            {
+              metric: 'f1',
+              value: 0.81,
+              meaning: 'F1 Score = 0.8100 — The harmonic mean of Precision and Recall.',
+              formula: 'F1 = 2 * (Precision * Recall) / (Precision + Recall)',
+              guidance: 'PIPER selection metric.',
+            },
+          ],
+          confusion_matrix_meaning: 'Out of 200 rows: 140 TN, 24 TP, 16 FP, 20 FN.',
+          baseline_comparison: 'Model F1=0.81 exceeds baseline.',
+          model_concept: {
+            algorithm: 'logistic_regression',
+            name: 'Logistic Regression',
+            concept: 'Linear classification algorithm mapping log-odds to class probabilities.',
+            strengths: ['Interpretable', 'Fast'],
+            tradeoffs: ['Linear decision boundary only'],
+            how_piper_used_it: 'Trained with L2 regularization.',
+            is_winner: true,
+          },
+        },
+      ],
+      guardrail_checks: [
+        {
+          check: 'data_leakage',
+          passed: true,
+          severity: 'error',
+          meaning: 'Checks whether any feature is suspiciously predictive of target.',
+          message: 'No leakage detected.',
+        },
+      ],
+      failure: null,
+      replan: {
+        replan_occurred: false,
+        total_attempts: 1,
+        attempts_summary: [],
+        plan_differences: [],
+        educational_takeaway: 'Autonomous self-correction handles plan defects gracefully.',
+      },
+      feature_importance: {
+        available: true,
+        method: 'Model-Derived Feature Importance',
+        algorithm: 'logistic_regression',
+        disclaimer: 'Feature importance shows association with model predictions; it does not prove causation.',
+        features: [
+          { feature: 'tenure', importance: 0.42 },
+          { feature: 'TotalCharges', importance: 0.31 },
+        ],
+        educational_summary: 'Features with higher weights had greater influence on model decisions.',
+      },
+      model_concepts: [
+        {
+          algorithm: 'logistic_regression',
+          name: 'Logistic Regression',
+          concept: 'Linear classification algorithm mapping log-odds to class probabilities.',
+          strengths: ['Interpretable', 'Fast'],
+          tradeoffs: ['Linear decision boundary only'],
+          how_piper_used_it: 'Trained with L2 regularization.',
+          is_winner: true,
+        },
+      ],
+    })
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/learn/journey`, ({ params }) => {
+    return HttpResponse.json({
+      run_id: String(params.runId),
+      status: runStatusOverride,
+      current_stage_id: 1,
+      stages: [
+        {
+          stage_id: 1,
+          title: 'Understand the Dataset',
+          description: 'Load raw dataset and inspect row/column counts.',
+          status: 'completed',
+          summary: 'Dataset profiling complete.',
+          details: {},
+          concept: 'Data Profiling',
+        },
+        {
+          stage_id: 2,
+          title: 'Identify the Target',
+          description: 'Define the outcome variable.',
+          status: 'completed',
+          summary: 'Target Churn identified.',
+          details: {},
+          concept: 'Target Specification',
+        },
+        {
+          stage_id: 14,
+          title: 'Test Unseen Data',
+          description: 'Score new unseen test data.',
+          status: 'completed',
+          summary: 'Test flight available.',
+          details: {},
+          concept: 'Test Flight',
+        },
+      ],
+    })
+  }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/learn/pipeline`, ({ params }) => {
+    return HttpResponse.json({
+      run_id: String(params.runId),
+      nodes: [
+        {
+          id: 'dataset',
+          name: 'Dataset',
+          stage: 'Input',
+          status: 'passed',
+          summary: 'Raw dataset profile.',
+          details: {},
+        },
+        {
+          id: 'preprocessing',
+          name: 'Preprocessing',
+          stage: 'Data Preparation',
+          status: 'passed',
+          summary: 'Imputed missing values.',
+          details: {},
+        },
+      ],
+      edges: [{ from_node: 'dataset', to_node: 'preprocessing' }],
+    })
+  }),
+
+  http.post(`${API_BASE_URL}/runs/:runId/explore`, ({ params }) => {
+    return HttpResponse.json({
+      experiment_id: 'exp_msw_001',
+      run_id: String(params.runId),
+      base_model_id: 'model_lr001',
+      variable: {
+        kind: 'algorithm',
+        name: 'algorithm',
+        base_value: 'logistic_regression',
+        new_value: 'random_forest',
+      },
+      new_model: {
+        model_id: 'model_rf_exp',
+        algorithm: 'random_forest',
+        parameters: {},
+        split_id: 'split_001',
+        training_rows: 5634,
+        feature_count: 20,
+        training_duration_seconds: 0.5,
+      },
+      evaluation: {
+        model_id: 'model_rf_exp',
+        split_id: 'split_001',
+        accuracy: 0.84,
+        precision: 0.82,
+        recall: 0.81,
+        f1: 0.815,
+        roc_auc: 0.87,
+        confusion_matrix: { tp: 120, tn: 500, fp: 50, fn: 80 },
+        test_rows: 750,
+      },
+      comparison: {
+        base_model_id: 'model_lr001',
+        new_model_id: 'model_rf_exp',
+        primary_metric: 'f1',
+        base_metric_value: 0.81,
+        new_metric_value: 0.815,
+        delta: 0.005,
+        winner_id: 'model_rf_exp',
+        justification: 'random_forest selected: F1=0.8150 vs 0.8100.',
+      },
+    })
+  }),
 ]
 
 export const server = setupServer(...handlers)

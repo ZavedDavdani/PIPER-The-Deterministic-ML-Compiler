@@ -17,8 +17,9 @@ same run_id are served normally while it's in flight.
 from __future__ import annotations
 
 import asyncio
-import uuid
 from pathlib import Path
+from typing import Any, Optional
+import uuid
 
 from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, Response, StreamingResponse
@@ -73,10 +74,21 @@ from app.api.schemas import (
     RunResultResponse,
     RunStatusResponse,
 )
-from app.learning.explain import build_run_explanation
+from app.learning.explain import (
+    build_learning_journey,
+    build_pipeline_visualization,
+    build_run_explanation,
+    build_why_explanation,
+)
 from app.schemas.execution_timeline import ExecutionTimeline
 from app.schemas.exploration import ExplorationResult
-from app.schemas.learning import RunExplanation
+from app.schemas.learning import (
+    ExplanationLevel,
+    LearningJourney,
+    PipelineVisualization,
+    RunExplanation,
+    WhyExplanation,
+)
 from app.schemas.productization import (
     DecisionTrace,
     EvidenceExport,
@@ -285,17 +297,13 @@ def get_run_timeline(
 
 @router.get("/{run_id}/learn/explanation", response_model=RunExplanation)
 def get_run_learn_explanation(
-    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+    run_id: str,
+    level: ExplanationLevel = Query("beginner"),
+    run_store: InMemoryRunStore = Depends(get_run_store),
 ) -> RunExplanation:
     """
-    Batch 6A (PIPER Learn: Learn-Explain) — a read-only, deterministic,
-    template-based explanation of this run, grounded entirely in real
-    evidence already computed elsewhere in the run (see
-    build_run_explanation()). Structurally incapable of influencing
-    the run it explains: this endpoint only ever reads
-    record.final_state, never writes to RunStore or AgentState. Gated
-    on terminal status exactly like /result and /summary, since it
-    reads the same record.final_state.
+    Phase 6 (PIPER Learn: Student Mode) — level-aware (beginner/intermediate/advanced),
+    read-only, deterministic explanation of this run.
     """
     try:
         record = run_store.get(run_id)
@@ -308,7 +316,76 @@ def get_run_learn_explanation(
             detail=f"Run '{run_id}' is still '{record.status}' — no explanation yet.",
         )
 
-    return build_run_explanation(run_id, record.final_state)
+    return build_run_explanation(run_id, record.final_state, level=level)
+
+
+@router.get("/{run_id}/learn/journey", response_model=LearningJourney)
+def get_run_learning_journey(
+    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+) -> LearningJourney:
+    """
+    Phase 6 (Student Mode) — 14-stage guided ML workflow with stage statuses derived
+    strictly from actual run state.
+    """
+    try:
+        record = run_store.get(run_id)
+    except RunNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+
+    if record.status not in _TERMINAL_STATUSES or record.final_state is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_id}' is still '{record.status}' — learning journey not ready.",
+        )
+
+    return build_learning_journey(run_id, record.final_state)
+
+
+@router.get("/{run_id}/learn/pipeline", response_model=PipelineVisualization)
+def get_run_pipeline_visualization(
+    run_id: str, run_store: InMemoryRunStore = Depends(get_run_store)
+) -> PipelineVisualization:
+    """
+    Phase 6 (Student Mode) — interactive flowchart nodes and edges for pipeline visualization.
+    """
+    try:
+        record = run_store.get(run_id)
+    except RunNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+
+    if record.status not in _TERMINAL_STATUSES or record.final_state is None:
+        raise HTTPException(
+            status_code=409,
+            detail=f"Run '{run_id}' is still '{record.status}' — pipeline visualization not ready.",
+        )
+
+    return build_pipeline_visualization(run_id, record.final_state)
+
+
+@router.get("/{run_id}/learn/why", response_model=WhyExplanation)
+def get_run_why_explanation(
+    run_id: str,
+    action: str = Query(..., description="Action or tool name to explain"),
+    column: Optional[str] = Query(None, description="Column name if applicable"),
+    level: ExplanationLevel = Query("beginner"),
+    run_store: InMemoryRunStore = Depends(get_run_store),
+) -> WhyExplanation:
+    """
+    Phase 6 (Student Mode) — 'Why did PIPER do this?' explanation for a specific action.
+    """
+    try:
+        record = run_store.get(run_id)
+    except RunNotFoundError:
+        raise HTTPException(status_code=404, detail=f"Run '{run_id}' does not exist.")
+
+    evidence: dict[str, Any] = {}
+    if column:
+        evidence["column"] = column
+
+    if record.final_state and hasattr(record.final_state, "comparison") and record.final_state.comparison:
+        evidence["winner_id"] = record.final_state.comparison.recommended_model_id
+
+    return build_why_explanation(action, evidence=evidence, level=level)
 
 
 @router.post("/{run_id}/explore", response_model=ExplorationResult, status_code=201)

@@ -580,3 +580,199 @@ export interface DeploymentPackageResponse {
   files: string[]
   docker_optional: boolean
 }
+
+// --- Phase 6: Student Mode & ML Education ------------------------------------
+
+export type ExplanationLevel = 'beginner' | 'intermediate' | 'advanced'
+
+export interface FormulaEntry {
+  name: string
+  formula: string
+  description: string
+  when_used: string
+}
+
+export interface ComprehensionCheck {
+  question: string
+  answer_explanation: string
+  related_concept: string
+}
+
+export interface ConceptDefinition {
+  key: string
+  title: string
+  category: string
+  summary: string
+  detail: string
+  related_formula?: string | null
+}
+
+export interface WhyExplanation {
+  action: string
+  what_happened: string
+  why: string
+  concept: string
+  alternative_consideration?: string | null
+  level: ExplanationLevel
+  evidence: Record<string, unknown>
+}
+
+export interface OperationExplanation {
+  operation_id: string
+  tool_name: string
+  what_happened: string
+  why: string
+  level?: ExplanationLevel
+  concept?: string | null
+  alternative_consideration?: string | null
+}
+
+export interface ModelSelectionExplanation {
+  recommended_model_id: string
+  recommended_algorithm: string
+  justification: string
+  candidates: ModelComparisonEntry[]
+  concept?: string
+}
+
+export interface MetricExplanation {
+  metric: string
+  value: number
+  meaning: string
+  formula?: string | null
+  guidance?: string | null
+}
+
+export interface ModelConceptExplanation {
+  algorithm: string
+  name: string
+  concept: string
+  strengths: string[]
+  tradeoffs: string[]
+  how_piper_used_it: string
+  is_winner: boolean
+}
+
+export interface EvaluationExplanation {
+  model_id: string
+  algorithm?: string | null
+  metrics: MetricExplanation[]
+  confusion_matrix_meaning: string
+  baseline_comparison?: string | null
+  model_concept?: ModelConceptExplanation | null
+}
+
+export interface GuardrailCheckExplanation {
+  check: string
+  passed: boolean
+  severity: string
+  meaning: string
+  message: string
+  educational_action?: string | null
+}
+
+export interface FailureExplanation {
+  category: string
+  message: string
+  retryable: boolean
+  human_intervention_required: boolean
+  meaning: string
+  educational_takeaway?: string | null
+}
+
+export interface ReplanExplanation {
+  replan_occurred: boolean
+  total_attempts: number
+  attempts_summary: Record<string, unknown>[]
+  plan_differences: Record<string, unknown>[]
+  educational_takeaway: string
+}
+
+export interface FeatureImportanceEducation {
+  available: boolean
+  method: string
+  algorithm?: string | null
+  disclaimer: string
+  features: Record<string, unknown>[]
+  educational_summary: string
+}
+
+export interface LearningJourneyStage {
+  stage_id: number
+  title: string
+  description: string
+  status: 'completed' | 'in_progress' | 'failed' | 'not_reached' | 'skipped'
+  summary: string
+  details: Record<string, unknown>
+  concept: string
+}
+
+export interface LearningJourney {
+  run_id: string
+  status: string
+  current_stage_id?: number | null
+  stages: LearningJourneyStage[]
+}
+
+export interface PipelineNode {
+  id: string
+  name: string
+  stage: string
+  status: 'passed' | 'failed' | 'pending' | 'not_reached' | 'skipped'
+  summary: string
+  details: Record<string, unknown>
+}
+
+export interface PipelineEdge {
+  from_node: string
+  to_node: string
+}
+
+export interface PipelineVisualization {
+  run_id: string
+  nodes: PipelineNode[]
+  edges: PipelineEdge[]
+}
+
+export interface RunExplanation {
+  run_id: string
+  status: string
+  level: ExplanationLevel
+  preprocessing: OperationExplanation[]
+  feature_engineering: OperationExplanation[]
+  model_selection?: ModelSelectionExplanation | null
+  evaluation: EvaluationExplanation[]
+  guardrail_checks: GuardrailCheckExplanation[]
+  failure?: FailureExplanation | null
+  replan?: ReplanExplanation | null
+  feature_importance?: FeatureImportanceEducation | null
+  model_concepts: ModelConceptExplanation[]
+}
+
+export interface ExplorationComparison {
+  base_model_id: string
+  new_model_id: string
+  primary_metric: string
+  base_metric_value: number
+  new_metric_value: number
+  delta: number
+  winner_id: string
+  justification: string
+}
+
+export interface ExplorationResult {
+  experiment_id: string
+  run_id: string
+  base_model_id: string
+  variable: {
+    kind: 'algorithm' | 'hyperparameter'
+    name: string
+    base_value: unknown
+    new_value: unknown
+  }
+  new_model: TrainingResult
+  evaluation: EvaluationResult
+  comparison: ExplorationComparison
+  evaluation_explanation?: EvaluationExplanation | null
+}
+
