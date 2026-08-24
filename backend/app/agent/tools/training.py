@@ -113,8 +113,6 @@ def _build_classifier(algorithm: str, params: dict):
         return LogisticRegression(
             C=params.get("C", 1.0),
             max_iter=int(params.get("max_iter", 1000)),
-            l1_ratio=0.0,  # pure L2 regularization for V1 (fixed, not settable) —
-                           # sklearn 1.8 deprecated penalty="l2" in favor of this
             random_state=RANDOM_STATE,
         )
     else:  # random_forest

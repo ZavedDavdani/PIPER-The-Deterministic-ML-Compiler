@@ -35,6 +35,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.routers.datasets import router as datasets_router
 from app.api.routers.learning import router as learning_router
+from app.api.routers.predict import router as predict_router
 from app.api.routers.runs import router as runs_router
 from app.api.routers.settings import router as settings_router
 from app.llm.ollama_provider import OllamaProvider
@@ -99,6 +100,7 @@ app.add_middleware(
 
 app.include_router(datasets_router)
 app.include_router(runs_router)
+app.include_router(predict_router)
 app.include_router(learning_router)
 app.include_router(settings_router)
 

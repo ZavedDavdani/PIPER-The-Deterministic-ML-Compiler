@@ -8,6 +8,7 @@ import { ResultSummary } from '@/features/runs/ResultSummary'
 import { DecisionTracePanel } from '@/features/runs/DecisionTracePanel'
 import { ArtifactPanel } from '@/features/runs/ArtifactPanel'
 import { GovernancePanel } from '@/features/runs/GovernancePanel'
+import { TestFlightPanel } from '@/features/runs/TestFlightPanel'
 import { useRunEvents } from '@/lib/useRunEvents'
 import { useRunStatus } from '@/lib/useRunStatus'
 import { useRunResult } from '@/lib/useRunResult'
@@ -58,6 +59,7 @@ export function RunPage() {
           {result && <ResultSummary result={result} />}
           <ArtifactPanel runId={runId} runStatus={status?.status ?? ''} />
           <GovernancePanel runId={runId} runStatus={status?.status ?? ''} />
+          <TestFlightPanel runId={runId} runStatus={status?.status ?? ''} />
         </>
       )}
     </div>

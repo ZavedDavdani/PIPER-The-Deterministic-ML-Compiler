@@ -378,6 +378,19 @@ export const handlers = [
       { status: 201 },
     )
   }),
+
+  http.get(`${API_BASE_URL}/runs/:runId/deployment`, ({ params }) => {
+    return HttpResponse.json({
+      run_id: String(params.runId),
+      status: 'NOT_READY',
+      artifact_status: 'NOT_GENERATED',
+      winning_model_id: null,
+      algorithm: null,
+      required_columns: [],
+      checks: [],
+      reason: { code: 'artifact_missing', message: 'No artifact bundle exists for this run.' },
+    })
+  }),
 ]
 
 export const server = setupServer(...handlers)

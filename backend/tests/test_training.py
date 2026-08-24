@@ -108,6 +108,7 @@ class TestHappyPath:
         split_store, split_id = prepared_split
         with warnings.catch_warnings():
             warnings.simplefilter("error")
+            warnings.filterwarnings("ignore", message=r".*disp.*iprint.*", category=DeprecationWarning)
             result = train_model(
                 split_id, "Churn", "logistic_regression", {"C": 1.0, "max_iter": 1000},
                 good_intent, split_store, model_store,

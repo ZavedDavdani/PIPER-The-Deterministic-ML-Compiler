@@ -18,6 +18,9 @@ import type {
   ArtifactFileListResponse,
   GovernanceBundle,
   FairnessReport,
+  PredictResponse,
+  DeploymentReadinessResponse,
+  DeploymentPackageResponse,
 } from './types'
 
 /**
@@ -44,7 +47,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     let detail = response.statusText
     try {
       const body = (await response.json()) as ApiErrorBody
-      if (body?.detail) detail = body.detail
+      if (typeof body?.detail === 'string') {
+        detail = body.detail
+      } else if (body?.detail && typeof body.detail === 'object') {
+        detail = body.detail.message ?? body.detail.code ?? JSON.stringify(body.detail)
+      }
     } catch {
       // response body wasn't JSON — fall back to statusText
     }
@@ -172,4 +179,48 @@ export function governanceDocumentUrl(runId: string, filename: string, columns: 
   }
   const suffix = params.size ? `?${params.toString()}` : ''
   return `${API_BASE_URL}/runs/${encodeURIComponent(runId)}/governance/documents/${encodeURIComponent(filename)}${suffix}`
+}
+
+export function postPredict(runId: string, rows: Record<string, unknown>[]): Promise<PredictResponse> {
+  return request<PredictResponse>('/predict', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ run_id: runId, rows }),
+  })
+}
+
+export function getDeployment(runId: string): Promise<DeploymentReadinessResponse> {
+  return request<DeploymentReadinessResponse>(`/runs/${encodeURIComponent(runId)}/deployment`)
+}
+
+export function generateDeploymentPackage(runId: string): Promise<DeploymentPackageResponse> {
+  return request<DeploymentPackageResponse>(`/runs/${encodeURIComponent(runId)}/deployment/package`, {
+    method: 'POST',
+  })
+}
+
+export function deploymentPackageFileUrl(runId: string, filename: string): string {
+  return `${API_BASE_URL}/runs/${encodeURIComponent(runId)}/deployment/package/files/${encodeURIComponent(filename)}`
+}
+
+export function testFlight(runId: string, file: File): Promise<PredictResponse> {
+  const body = new FormData()
+  body.append('file', file)
+  return request<PredictResponse>(`/runs/${encodeURIComponent(runId)}/test-flight`, {
+    method: 'POST',
+    body,
+  })
+}
+
+export async function testFlightCsvBlob(runId: string, file: File): Promise<Blob> {
+  const body = new FormData()
+  body.append('file', file)
+  const response = await fetch(
+    `${API_BASE_URL}/runs/${encodeURIComponent(runId)}/test-flight.csv`,
+    { method: 'POST', body },
+  )
+  if (!response.ok) {
+    throw new ApiError(response.status, 'Could not download prediction CSV.')
+  }
+  return response.blob()
 }

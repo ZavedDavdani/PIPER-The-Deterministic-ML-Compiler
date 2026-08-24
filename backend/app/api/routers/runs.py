@@ -20,7 +20,7 @@ import asyncio
 import uuid
 from pathlib import Path
 
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, File, HTTPException, Query, UploadFile
 from fastapi.responses import FileResponse, Response, StreamingResponse
 
 from app.agent import AgentState, build_graph
@@ -39,6 +39,14 @@ from app.governance import (
     assemble_governance_bundle,
     render_governance_document,
 )
+from app.api.routers.predict import attach_sample, inference_http, require_known_run
+from app.deployment.csv_io import parse_unseen_csv, predictions_csv
+from app.deployment.errors import InferenceError
+from app.deployment.package import write_deployment_package
+from app.deployment.paths import PACKAGE_FILES, package_dir
+from app.deployment.predict import predict_unseen
+from app.deployment.readiness import check_deployment_readiness
+from app.schemas.deployment import DeploymentPackageResponse, DeploymentReadinessResponse, PredictResponse
 from app.artifacts.errors import ArtifactEligibilityError, ArtifactParityError
 from app.artifacts.publisher import (
     DOWNLOADABLE_FILES,
@@ -713,6 +721,100 @@ def download_run_artifact_file(
     elif filename.endswith(".py"):
         media = "text/x-python"
     return FileResponse(path, media_type=media, filename=filename)
+
+
+@router.get("/{run_id}/deployment", response_model=DeploymentReadinessResponse)
+def get_deployment_readiness(
+    run_id: str,
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> DeploymentReadinessResponse:
+    require_known_run(run_id, run_store)
+    payload = check_deployment_readiness(artifact_dir, run_id)
+    return DeploymentReadinessResponse(**payload)
+
+
+@router.post("/{run_id}/deployment/package", response_model=DeploymentPackageResponse, status_code=201)
+def generate_deployment_package(
+    run_id: str,
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> DeploymentPackageResponse:
+    require_known_run(run_id, run_store)
+    try:
+        payload = write_deployment_package(artifact_dir, run_id)
+    except InferenceError as exc:
+        raise inference_http(exc) from exc
+    return DeploymentPackageResponse(
+        run_id=payload["run_id"],
+        status=payload["status"],
+        files=payload["files"],
+        docker_optional=True,
+    )
+
+
+@router.get("/{run_id}/deployment/package/files/{filename}")
+def download_deployment_package_file(
+    run_id: str,
+    filename: str,
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> FileResponse:
+    require_known_run(run_id, run_store)
+    if filename not in PACKAGE_FILES:
+        raise HTTPException(status_code=404, detail=f"Package file '{filename}' is not published.")
+    dest = package_dir(artifact_dir, run_id)
+    path = (dest / filename).resolve()
+    root = dest.resolve()
+    if root not in path.parents and path != root / filename:
+        raise HTTPException(status_code=404, detail=f"Package file '{filename}' is not published.")
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail=f"Package file '{filename}' is not available.")
+    return FileResponse(path, filename=filename)
+
+
+@router.post("/{run_id}/test-flight", response_model=PredictResponse)
+async def test_flight_predict(
+    run_id: str,
+    file: UploadFile = File(...),
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> PredictResponse:
+    """Score unseen CSV. Does not retrain and does not modify the upload."""
+    require_known_run(run_id, run_store)
+    if file.size is not None and file.size > 100 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="CSV exceeds the maximum upload size (100MB).")
+    raw = await file.read()
+    try:
+        frame = parse_unseen_csv(file.filename, raw)
+        payload = predict_unseen(artifact_dir, run_id, frame)
+        return attach_sample(frame, payload)
+    except InferenceError as exc:
+        raise inference_http(exc) from exc
+
+
+@router.post("/{run_id}/test-flight.csv")
+async def test_flight_predict_csv(
+    run_id: str,
+    file: UploadFile = File(...),
+    run_store: InMemoryRunStore = Depends(get_run_store),
+    artifact_dir: Path = Depends(get_artifact_dir),
+) -> Response:
+    require_known_run(run_id, run_store)
+    if file.size is not None and file.size > 100 * 1024 * 1024:
+        raise HTTPException(status_code=413, detail="CSV exceeds the maximum upload size (100MB).")
+    raw = await file.read()
+    try:
+        frame = parse_unseen_csv(file.filename, raw)
+        payload = predict_unseen(artifact_dir, run_id, frame)
+        body = predictions_csv(frame, payload["predictions"])
+    except InferenceError as extra:
+        raise inference_http(extra) from extra
+    return Response(
+        content=body,
+        media_type="text/csv",
+        headers={"Content-Disposition": 'attachment; filename="predictions.csv"'},
+    )
 
 
 @router.get("/{run_id}/events")
