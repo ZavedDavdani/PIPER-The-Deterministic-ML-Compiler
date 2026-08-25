@@ -20,11 +20,14 @@ import json
 import sys
 import time
 import urllib.request
+from pathlib import Path
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8021"
-CSV = r"C:\dev\PIPER\benchmark_data\train.csv"
+_REPO_ROOT = Path(__file__).parent.parent
+CSV = str(_REPO_ROOT / "benchmark_data" / "train.csv")
 TARGET = "Survived"
 DEADLINE_SECONDS = 1500  # 25 min cap
+
 
 
 def _get(path: str) -> dict:

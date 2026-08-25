@@ -6,30 +6,33 @@ __pycache__/
 .venv/
 venv/
 
-# Env
+# Environment — NEVER commit secrets or local overrides
 .env
+.env.local
+.env.*.local
 
-# Data (raw dataset kept out of git; processed is regenerable)
+# Data — raw dataset kept in git; processed is regenerable
 data/processed/*
 !data/processed/.gitkeep
+# SQLite database generated at runtime
+data/*.sqlite
+*.sqlite
 
 # Node / frontend build output
 node_modules/
 dist/
 
-# Local SQLite run history (Batch 2)
-*.sqlite
-data/piper_runs.sqlite
-
-# Phase 3 exported ML artifacts (generated locally at repo root)
+# Generated ML artifact bundles (created locally at runtime)
 /artifacts/
 
 # OS
 .DS_Store
+Thumbs.db
 
 # IDE
 .vscode/
 .idea/
 
+# Duplicate patterns (belt-and-suspenders)
 __pycache__/
 *.pyc

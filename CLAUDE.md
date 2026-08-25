@@ -8,9 +8,9 @@ discovered; don't let it drift from reality.
 
 ## Project identity
 
-- **Root:** `C:\dev\PIPER`
-- **Backend path:** `C:\dev\PIPER\backend` (Python 3.11+, FastAPI + LangGraph)
-- **Frontend path:** `C:\dev\PIPER\frontend` (React + Vite + TypeScript + Tailwind CSS v4)
+- **Root:** repository root (clone anywhere)
+- **Backend:** `backend/` (Python 3.11+, FastAPI + LangGraph)
+- **Frontend:** `frontend/` (React + Vite + TypeScript + Tailwind CSS v4)
 - **Purpose:** solo portfolio project — an autonomous agent that takes a
   messy tabular dataset and a prediction objective, profiles the data,
   plans and executes cleaning/feature engineering, trains and compares
@@ -4073,3 +4073,60 @@ explicit go-ahead and a locked spec of its own.
   names, dtypes, `target_column`, missing/unique percentages, and
   numeric min/max/mean are locked minimums that survive even an
   impossible budget.
+
+
+## V1.2.1 — Portability & Repository Release (COMPLETE on `v1.2.1-portability`)
+
+**Branch:** `v1.2.1-portability`
+**Purpose:** Prepare PIPER for public portfolio repository. No features added,
+no architecture changes. Documentation, setup scripts, and two benchmark-script
+path fixes only.
+
+### Changes made
+
+| File | Change |
+|---|---|
+| `CLAUDE.md` | Removed machine-specific `C:\dev\PIPER` paths from project identity section |
+| `README.md` | Full portfolio-quality rewrite: Mermaid architecture diagram, capabilities, setup, launcher, config table, limitations, honest model-reliability disclosure |
+| `.env.example` | New: documents all configurable env vars with defaults |
+| `.gitignore` | Improved: added `.env.local`, `Thumbs.db`, explicit `data/*.sqlite` |
+| `check.py` | New: standalone PIPER system readiness check (Python, deps, Ollama, model, dirs) |
+| `setup.sh` | New: one-command setup for Linux/macOS |
+| `setup.ps1` | New: one-command setup for Windows PowerShell |
+| `run.sh` | New: one-command launcher for Linux/macOS |
+| `run.ps1` | New: one-command launcher for Windows PowerShell |
+| `backend/capture_qwen3_8b_single_success.py` | Fixed: `C:\dev\PIPER\...` → `Path(__file__).parent.parent / ...` |
+| `backend/v1_e2e_smoke.py` | Fixed: `C:\dev\PIPER\...` → `Path(__file__).parent.parent / ...` |
+
+### What was NOT changed
+
+All of: planner, validation, execution graph, guardrails, artifacts, parity gate,
+governance, deployment inference, Student Mode, What-If experiments, tests, APIs,
+schemas, storage. Zero source-code changes. Zero new features.
+
+### Security audit result
+
+- No API keys, secrets, tokens, passwords, or private keys found in tracked files.
+- No personal usernames in tracked source or data files.
+- `frontend/.env.development` contains only `VITE_API_BASE_URL=http://localhost:8000` (not a secret).
+- Benchmark JSON results contain no personal information.
+- `.gitignore` correctly excludes `.env`, `.venv`, `*.sqlite`, `/artifacts/`, `node_modules/`, `dist/`.
+
+### Historical verified test results (all preserved)
+
+| Checkpoint | Backend | Frontend |
+|---|---|---|
+| V1 frozen baseline (`e87849e`) | 928 passed, 5 skipped, 0 failures | — |
+| Batch 1 (Decision Trace) | 939 passed, 5 skipped, 0 failures | — |
+| Batch 2 (SQLite Store) | 948 passed, 5 skipped, 0 failures | — |
+| Phase 3 (Artifact Bundles) | 961 passed, 5 skipped, 0 failures | — |
+| Phase 4 (Governance Cards) | 978 passed, 5 skipped, 0 failures | — |
+| Phase 5 (Deployment) | 991 passed, 5 skipped, 0 failures | — |
+| Phase 6 / V1.2 (Student Mode) | **1003 passed, 5 skipped, 0 failures** | 39 passed |
+| V1.2.1 (Portability) | 1003 passed, 5 skipped, 0 failures | 39 passed |
+
+### Portability guarantee
+
+All env vars consumed by PIPER use documented defaults; no hardcoded machine
+paths remain in application code. Benchmark/evidence scripts use `Path(__file__)`
+for self-relative paths. The repository can be cloned to any directory on any OS.

@@ -27,12 +27,15 @@ import sys
 import threading
 import time
 import urllib.request
+from pathlib import Path
 
 BASE = sys.argv[1] if len(sys.argv) > 1 else "http://127.0.0.1:8022"
-CSV = r"C:\dev\PIPER\benchmark_data\train.csv"
+_REPO_ROOT = Path(__file__).parent.parent
+CSV = str(_REPO_ROOT / "benchmark_data" / "train.csv")
 TARGET = "Survived"
-OUT_DIR = r"C:\dev\PIPER\benchmark_results\qwen3_8b_single_success"
+OUT_DIR = str(_REPO_ROOT / "benchmark_results" / "qwen3_8b_single_success")
 DEADLINE_SECONDS = 14400  # 4h observation window (harness-only)
+
 
 EXPECTED_MODEL = "qwen3:8b"
 
