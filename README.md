@@ -152,6 +152,8 @@ bash run.sh
 
 ### Or start each process manually
 
+**Linux / macOS:**
+
 ```bash
 # Terminal 1 — backend
 cd backend
@@ -162,6 +164,17 @@ cd frontend
 npm run dev
 ```
 
+**Windows (PowerShell):**
+
+```powershell
+# Terminal 1 — backend
+cd backend
+..\.venv\Scripts\python.exe -m uvicorn app.main:app --reload
+
+# Terminal 2 — frontend
+cd frontend
+npm run dev
+```
 ---
 
 ## Sample Workflow
@@ -204,7 +217,7 @@ curl -X POST http://localhost:8000/runs/<run_id>/explore \
   -d '{"variable": "algorithm", "value": "random_forest"}'
 ```
 
-Full API reference: [`README-API.md`](README.md) or `/docs` when the backend is running.
+Full API reference: `/docs` when the backend is running.
 
 ---
 
@@ -271,8 +284,8 @@ PIPER_RUN_OLLAMA_TESTS=1 pytest backend/tests/test_ollama_integration.py -q
 ```
 PIPER/
 ├── backend/
-│   ├── app/
-│   │   ├── agent/          # LangGraph graph, plan nodes, validation, tools
+│   ├── app/                # LangGraph graph, plan nodes, validation, tools
+│   │   ├── agent/          # Agent graph and deterministic execution tools
 │   │   ├── artifacts/      # Bundle export, SHA-256 hashes, parity gate
 │   │   ├── deployment/     # Standalone inference, Test Flight, readiness
 │   │   ├── governance/     # Model cards, data cards, fairness analysis
@@ -282,19 +295,27 @@ PIPER/
 │   │   ├── storage/        # SQLite run store, in-memory stores
 │   │   └── api/            # FastAPI routers
 │   ├── tests/              # 1003-test behavioral suite
-│   └── benchmark_*/        # Empirical model benchmarks (evidence, not tests)
+│   ├── Dockerfile          # Backend container image definition
+│   ├── Dockerfile.dockerignore
+│   └── pytest.ini
 ├── frontend/
-│   └── src/
-│       ├── features/       # Runs, artifacts, governance, student, settings
-│       ├── pages/          # HomePage, RunPage, HistoryPage
-│       └── lib/            # API client, SSE hooks, types
+│   ├── src/
+│   │   ├── features/       # Runs, artifacts, governance, student, settings
+│   │   ├── pages/          # HomePage, RunPage, HistoryPage
+│   │   └── lib/            # API client, SSE hooks, types
+│   ├── Dockerfile          # Frontend container image definition
+│   ├── nginx.conf
+│   └── package.json
 ├── data/raw/               # Reference dataset (Telco Customer Churn)
-├── benchmark_results/      # Recorded benchmark evidence
+├── benchmark_data/         # Test fixture dataset (Titanic)
+│   └── train.csv
+├── benchmark_results/      # Recorded empirical benchmark evidence
 ├── check.py                # PIPER system readiness check
 ├── setup.sh / setup.ps1    # One-command setup (Linux/macOS / Windows)
 ├── run.sh / run.ps1        # One-command launcher
 ├── .env.example            # Configuration template
 ├── docker-compose.yml      # Docker Compose (backend + frontend)
+├── LICENSE                 # MIT License
 └── requirements.txt        # Pinned Python dependencies
 ```
 
