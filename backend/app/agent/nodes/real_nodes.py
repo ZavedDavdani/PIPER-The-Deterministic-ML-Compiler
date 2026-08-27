@@ -704,6 +704,9 @@ def feature_engineer_node(state: AgentState, store: DatasetStore) -> dict:
     schemas/feature_engineering.py). The actual fit happens later,
     inside train_model(), on the train split only.
     """
+    if _upstream_already_failed(state):
+        return {}
+
     feature_log: list = []
     new_trace: list = []
     updated_plan: list = []
@@ -752,9 +755,18 @@ def feature_engineer_node(state: AgentState, store: DatasetStore) -> dict:
         if s.tool_name in ("encode_categorical_features", "scale_features") and s.status == "completed"
     ]
     if not completed_fe_steps:
+        failure = FailureInfo(
+            category="TRAINING_ERROR",
+            message="feature_engineer_node produced an empty feature set — no encode/scale steps succeeded.",
+            node="feature_engineer",
+            attempt=state.retry_count,
+            retryable=True,
+            human_intervention_required=False,
+        )
         return {
             "status": "failed",
-            "error": "feature_engineer_node produced an empty feature set — no encode/scale steps succeeded.",
+            "error": failure.message,
+            "failure": failure,
             "plan": updated_plan,
             "tool_trace": state.tool_trace + new_trace,
         }
@@ -823,6 +835,9 @@ def _feature_intent_from_plan(state: AgentState) -> FeatureEngineeringIntent:
 
 def split_node(state: AgentState, dataset_store: DatasetStore, split_store: SplitStore) -> dict:
     """Calls the real split_dataset(). Sets state.split_id on success."""
+    if _upstream_already_failed(state):
+        return {}
+
     result = split_dataset(state.dataset_id, state.target_column, TEST_SIZE, dataset_store, split_store)
     trace = _trace(
         "splitter", "split_dataset",
@@ -874,6 +889,9 @@ def reproducibility_node(state: AgentState, split_store: SplitStore) -> dict:
     contains the completed cleaning/feature-engineering steps for this
     attempt, exactly what canonicalize_plan() expects.
     """
+    if _upstream_already_failed(state):
+        return {}
+
     if state.split_id is None:
         return {"status": "failed", "error": "reproducibility_node reached with no split_id in state."}
 

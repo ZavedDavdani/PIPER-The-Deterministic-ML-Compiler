@@ -35,6 +35,7 @@ AdequacyCondition = Literal[
     "target_protection",
     "identifier_like_column",
     "imputation_strategy_compatibility",
+    "empty_feature_set",
 ]
 """
 Deterministically detectable dataset conditions this layer evaluates.
@@ -45,6 +46,11 @@ computes, (b) a plan that can be objectively checked against it, and
 new profiling subsystem, or that amount to generic ML "best practice",
 are intentionally excluded — see CLAUDE.md for what was considered and
 left out.
+
+empty_feature_set: the plan contains no encode_categorical_features or
+scale_features step, so feature_engineer_node would produce an empty
+feature matrix and train_model() would fail with "At least one feature
+column is required."
 """
 
 AdequacyStatus = Literal["ADDRESSED", "NOT_ADDRESSED", "NOT_APPLICABLE"]

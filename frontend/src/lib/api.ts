@@ -9,6 +9,7 @@ import type {
   EvidenceExport,
   HumanInterventionPackage,
   OllamaStatusResponse,
+  ProviderStatusResponse,
   PiperVerdict,
   ReplayResponse,
   RunListResponse,
@@ -139,6 +140,23 @@ export function getOllamaStatus(): Promise<OllamaStatusResponse> {
 
 export function updateOllamaConfig(body: { model?: string; host?: string }): Promise<OllamaStatusResponse> {
   return request<OllamaStatusResponse>('/settings/ollama', {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  })
+}
+
+export function getProviderStatus(): Promise<ProviderStatusResponse> {
+  return request<ProviderStatusResponse>('/settings/provider')
+}
+
+export function updateProviderConfig(body: {
+  provider: 'openai' | 'ollama' | 'gemini'
+  model: string
+  host?: string
+  base_url?: string
+}): Promise<ProviderStatusResponse> {
+  return request<ProviderStatusResponse>('/settings/provider', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(body),

@@ -13,10 +13,19 @@ pytest==9.1.1
 # Used by PIPER's stateful planning and execution graph.
 langgraph==1.2.10
 
+# Cloud LLM Provider (OpenAI SDK)
+openai==3.3.1
+
+# Cloud LLM Provider (Google Gemini SDK)
+google-genai==2.20.0
+
 # Backend API
 # FastAPI exposes the PIPER API and SSE endpoints.
 fastapi==0.141.1
 uvicorn==0.52.1
+
+# Environment configuration (.env loading at backend startup)
+python-dotenv==1.2.3
 
 # Multipart dataset uploads
 python-multipart==0.0.32

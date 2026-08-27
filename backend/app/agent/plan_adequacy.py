@@ -596,6 +596,55 @@ def evaluate_plan_adequacy(
                 )
             )
 
+    # --- Condition: empty feature set ------------------------------------
+    # If the plan contains no encode_categorical_features or scale_features
+    # step, feature_engineer_node will find no completed FE steps and
+    # return an immediate failure ("produced an empty feature set"), and
+    # train_model() will then fail with "At least one feature column is
+    # required."  Both failures were observed in the real end-to-end run
+    # (Titanic dataset, attempt 1).
+    #
+    # This is checked LAST so that a plan that genuinely tried to engineer
+    # features but got blocked by other material findings (e.g. a
+    # missing-value finding that implicated its encode step) produces the
+    # more specific material finding, not this catch-all.  The REPLAN loop
+    # will surface all material findings together in its evidence, so the
+    # LLM always receives a complete picture regardless of which finding
+    # fires.
+    #
+    # `columns=[]` is correct here: the condition is about the plan as a
+    # whole (no column is individually responsible), exactly as
+    # NOT_APPLICABLE findings use empty columns lists.
+    #
+    # READ-ONLY. This check cannot add or suggest a step; it only refuses
+    # the plan and lets the existing REPLAN loop ask the LLM to produce a
+    # better one.
+    has_feature_step = any(
+        getattr(s, "tool_name", None) in _FEATURE_SELECTING_TOOLS
+        for s in proposed_steps
+    )
+    if not has_feature_step:
+        findings.append(
+            AdequacyFinding(
+                condition="empty_feature_set",
+                columns=[],
+                status="NOT_ADDRESSED",
+                severity="material",
+                evidence=(
+                    "The plan contains no encode_categorical_features or scale_features step."
+                ),
+                reason=(
+                    "PIPER's feature_engineer_node only processes encode_categorical_features "
+                    "and scale_features steps. A plan with neither produces an empty feature "
+                    "matrix: feature_engineer_node raises 'produced an empty feature set' and "
+                    "train_model() subsequently raises 'At least one feature column is required'. "
+                    "The plan MUST include at least one encode_categorical_features step (for "
+                    "categorical columns) or one scale_features step (for numeric columns), "
+                    "or both, to be executable."
+                ),
+            )
+        )
+
     material = [f for f in findings if f.severity == "material" and f.status == "NOT_ADDRESSED"]
     material_failure = len(material) > 0
 

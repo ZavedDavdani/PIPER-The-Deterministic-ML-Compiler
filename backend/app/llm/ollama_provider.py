@@ -38,6 +38,7 @@ from typing import Optional
 
 from pydantic import ValidationError
 
+from app.llm.config import resolve_ollama_host, resolve_ollama_model
 from app.llm.provider import (
     LLMPlanningContext,
     LLMProviderResult,
@@ -142,30 +143,7 @@ existing override precedence).
 # found wins.
 _CONTENT_FIELD_CANDIDATES = ("response", "thinking")
 
-# JSON Schema for the Plan shape, passed via Ollama's `format` field
-# when requesting structured output — mirrors ProposedPlan's shape
-# exactly (not the graph-internal PlanStep) so a schema mismatch here
-# can never silently diverge from what this module actually validates
-# the response against afterward.
-PLAN_JSON_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "steps": {
-            "type": "array",
-            "items": {
-                "type": "object",
-                "properties": {
-                    "action": {"type": "string"},
-                    "tool_name": {"type": "string"},
-                    "arguments": {"type": "object"},
-                    "reasoning": {"type": "string"},
-                },
-                "required": ["action", "tool_name", "arguments", "reasoning"],
-            },
-        },
-    },
-    "required": ["steps"],
-}
+from app.llm.plan_schema import PLAN_JSON_SCHEMA, build_plan_json_schema
 
 
 def _extract_content(body: dict) -> Optional[str]:
@@ -249,8 +227,8 @@ class OllamaProvider:
         keep_alive: Optional[str] = None,
         total_deadline_seconds: Optional[float] = None,
     ) -> None:
-        self.host = host or os.environ.get("PIPER_OLLAMA_HOST", DEFAULT_OLLAMA_HOST)
-        self.model = model or os.environ.get("PIPER_LLM_MODEL", DEFAULT_LLM_MODEL)
+        self.host = host or resolve_ollama_host() or DEFAULT_OLLAMA_HOST
+        self.model = model or resolve_ollama_model() or DEFAULT_LLM_MODEL
         if timeout_seconds is not None:
             self.timeout_seconds = timeout_seconds
         else:
@@ -283,7 +261,7 @@ class OllamaProvider:
             "model": self.model,
             "prompt": prompt,
             "stream": False,
-            "format": PLAN_JSON_SCHEMA,
+            "format": build_plan_json_schema(context.allowed_operations, context.tool_schemas or None),
             "keep_alive": self.keep_alive,
         }
 

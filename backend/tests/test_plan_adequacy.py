@@ -2,7 +2,7 @@
 Deterministic Plan Adequacy tests.
 
 Covers app/agent/plan_adequacy.py (the evaluator), app/schemas/adequacy.py
-(the schema), and the integration into plan_node_v2 — including that
+(the schema), and the integration into plan_node_v2 Ã¢â‚¬â€ including that
 adequacy failures reuse the EXISTING REPLAN/retry/duplicate-plan
 machinery rather than introducing a parallel one.
 
@@ -79,7 +79,7 @@ class TestMissingValueAdequacy:
         `age` is missing 20% and the plan neither imputes/drops it NOR
         names it in any encode/scale step, so it is NOT an effective
         training feature. Under effective-feature semantics the finding
-        is still raised (status NOT_ADDRESSED — the condition is real
+        is still raised (status NOT_ADDRESSED Ã¢â‚¬â€ the condition is real
         and the evidence is surfaced), but its severity is `advisory`:
         train_model() selects X_train = train_df[all_feature_columns],
         so a column outside that list cannot reach either estimator.
@@ -97,7 +97,7 @@ class TestMissingValueAdequacy:
         """
         The counterpart to test_1: the identical dataset and identical
         unaddressed column, differing ONLY in that the plan now scales
-        `age` — which puts it into the effective feature set, so NaN
+        `age` Ã¢â‚¬â€ which puts it into the effective feature set, so NaN
         would genuinely reach the training matrix.
         """
         result = evaluate_plan_adequacy(
@@ -122,11 +122,19 @@ class TestMissingValueAdequacy:
         assert result.material_failure is True
 
     def test_2_missing_feature_with_imputation_is_addressed(self, df_with_missing):
-        """(2) Missing feature with supported imputation -> ADDRESSED."""
+        """(2) Missing feature with supported imputation -> ADDRESSED.
+
+        A realistic plan also includes a scale/encode step; the test pins
+        that the missing_values finding is ADDRESSED and no material_failure
+        fires for the imputed columns.  `score` is complete so adding
+        scale_features(["score"]) does not introduce a missing-value issue.
+        """
         result = evaluate_plan_adequacy(
             _context(df_with_missing),
             [_step("impute_missing_values", {"column": "age", "strategy": "median"}),
-             _step("impute_missing_values", {"column": "city", "strategy": "mode"})],
+             _step("impute_missing_values", {"column": "city", "strategy": "mode"}),
+             _step("scale_features", {"columns": ["age", "score"]}),
+             _step("encode_categorical_features", {"columns": ["city"]})],
             TARGET,
         )
 
@@ -136,10 +144,18 @@ class TestMissingValueAdequacy:
         assert result.status == "PASS"
 
     def test_3_missing_feature_with_drop_is_addressed(self, df_with_missing):
-        """(3) Missing feature with supported drop -> ADDRESSED."""
+        """(3) Missing feature with supported drop -> ADDRESSED.
+
+        A realistic plan also includes a scale step on the remaining
+        complete column (`score`) so the empty_feature_set check does not
+        fire.  The test intent Ã¢â‚¬â€ drop resolves missingness Ã¢â€ â€™ ADDRESSED Ã¢â‚¬â€
+        is unchanged.
+        """
         result = evaluate_plan_adequacy(
             _context(df_with_missing),
-            [_step("drop_column", {"column": "age"}), _step("drop_column", {"column": "city"})],
+            [_step("drop_column", {"column": "age"}),
+             _step("drop_column", {"column": "city"}),
+             _step("scale_features", {"columns": ["score"]})],
             TARGET,
         )
 
@@ -153,8 +169,8 @@ class TestMissingValueAdequacy:
 
         `age` is imputed (ADDRESSED). `city` is unaddressed AND encoded,
         putting it in the effective feature set, so it is material. This
-        keeps the test's real invariant — per-column independence, with
-        the addressed column never leaking into the material set — while
+        keeps the test's real invariant Ã¢â‚¬â€ per-column independence, with
+        the addressed column never leaking into the material set Ã¢â‚¬â€ while
         making the feature-set membership explicit rather than incidental.
         """
         result = evaluate_plan_adequacy(
@@ -167,7 +183,7 @@ class TestMissingValueAdequacy:
         assert _finding_for(result, "missing_values", "age").status == "ADDRESSED"
         assert _finding_for(result, "missing_values", "city").status == "NOT_ADDRESSED"
         assert result.material_failure is True
-        # Exactly one material finding — the addressed column must not leak in.
+        # Exactly one material finding Ã¢â‚¬â€ the addressed column must not leak in.
         assert [f.columns for f in result.material_findings] == [["city"]]
 
     def test_mixed_feature_and_non_feature_missing_columns(self, df_with_missing):
@@ -220,7 +236,7 @@ class TestMissingValueAdequacy:
     def test_scaling_a_missing_column_does_not_address_it(self, df_with_missing):
         """
         Explicitly pins the user-specified example: scaling a column does
-        NOT resolve its missing values (StandardScaler preserves NaN —
+        NOT resolve its missing values (StandardScaler preserves NaN Ã¢â‚¬â€
         verified against the real sklearn in plan_adequacy.py's docstring).
         """
         result = evaluate_plan_adequacy(
@@ -234,7 +250,7 @@ class TestMissingValueAdequacy:
         """
         Encoding does not resolve missingness either. OneHotEncoder absorbs
         NaN as its own category (verified), which is a silent decision, not
-        an explicit one — the rule is deliberately estimator-independent.
+        an explicit one Ã¢â‚¬â€ the rule is deliberately estimator-independent.
         """
         result = evaluate_plan_adequacy(
             _context(df_with_missing), [_step("encode_categorical_features", {"columns": ["city"]})], TARGET
@@ -305,7 +321,7 @@ class TestIdentifierAndHighMissingness:
     def test_identifier_like_retained_is_advisory_not_material(self):
         """
         An identifier-like column left in is recorded as evidence but must
-        NEVER by itself block execution — it violates no V1 execution
+        NEVER by itself block execution Ã¢â‚¬â€ it violates no V1 execution
         invariant, and retaining such a column can be legitimate.
         """
         n = 50
@@ -343,7 +359,7 @@ class TestIdentifierAndHighMissingness:
 
         The column is encoded here, putting it in the effective feature set,
         so the finding is material. There is deliberately no missingness
-        THRESHOLD anywhere in this assertion — 90% missing is material for
+        THRESHOLD anywhere in this assertion Ã¢â‚¬â€ 90% missing is material for
         exactly the same reason 0.22% missing would be: it is an unaddressed
         missing value in a column that reaches training.
         """
@@ -368,7 +384,7 @@ class TestIdentifierAndHighMissingness:
 
     def test_10b_high_missingness_outside_feature_set_is_advisory(self):
         """
-        The same 90%-missing column, NOT used as a feature, is advisory —
+        The same 90%-missing column, NOT used as a feature, is advisory Ã¢â‚¬â€
         proving severity follows effective-feature membership, not the
         magnitude of missingness. This is the `Cabin` case from the real
         Titanic benchmark.
@@ -391,18 +407,28 @@ class TestIdentifierAndHighMissingness:
         """
         The evaluator must report the condition, never prescribe DROP. Both
         dropping and imputing must be accepted as resolutions.
+
+        A `score` column (complete, numeric) is included so that a realistic
+        plan can include scale_features(["score"]) without triggering
+        empty_feature_set Ã¢â‚¬â€ the test's intent is solely that both DROP and
+        IMPUTE resolve missingness, not that the plan is incomplete.
         """
         n = 100
         df = pd.DataFrame({
             "mostly_missing": [None if i % 10 != 0 else "x" for i in range(n)],
+            "score": [float(i) for i in range(n)],
             TARGET: [i % 2 for i in range(n)],
         })
         ctx = _context(df)
 
-        dropped = evaluate_plan_adequacy(ctx, [_step("drop_column", {"column": "mostly_missing"})], TARGET)
-        imputed = evaluate_plan_adequacy(
-            ctx, [_step("impute_missing_values", {"column": "mostly_missing", "strategy": "mode"})], TARGET
-        )
+        dropped = evaluate_plan_adequacy(ctx, [
+            _step("drop_column", {"column": "mostly_missing"}),
+            _step("scale_features", {"columns": ["score"]}),
+        ], TARGET)
+        imputed = evaluate_plan_adequacy(ctx, [
+            _step("impute_missing_values", {"column": "mostly_missing", "strategy": "mode"}),
+            _step("scale_features", {"columns": ["score"]}),
+        ], TARGET)
 
         assert dropped.material_failure is False
         assert imputed.material_failure is False
@@ -442,7 +468,7 @@ class TestEvaluatorSemantics:
              _step("handle_missing", {"columns": ["age", "city"]}),
              # A REAL feature-selecting step puts both columns in the
              # effective feature set, so the unsupported ops above cannot
-             # hide behind advisory severity — if they were wrongly credited
+             # hide behind advisory severity Ã¢â‚¬â€ if they were wrongly credited
              # as "addressing" the missingness, this assertion would fail.
              _step("encode_categorical_features", {"columns": ["city"]}),
              _step("scale_features", {"columns": ["age"]})],
@@ -458,8 +484,14 @@ class TestEvaluatorSemantics:
     def test_unsupported_tool_never_puts_a_column_in_the_feature_set(self, df_with_missing):
         """
         An unrecognised tool must not be able to make a column an effective
-        feature either — feature-set membership is derived ONLY from the two
+        feature either Ã¢â‚¬â€ feature-set membership is derived ONLY from the two
         real feature-selecting tools, matching train_model()'s intent.
+
+        The plan contains only a fake tool name Ã¢â‚¬â€ no real FE step Ã¢â‚¬â€ so
+        empty_feature_set fires and material_failure is True.  The test
+        pins that the missing_values findings are ADVISORY (the fake tool
+        did NOT inject those columns into the feature set), not the
+        overall material_failure flag.
         """
         result = evaluate_plan_adequacy(
             _context(df_with_missing),
@@ -467,10 +499,17 @@ class TestEvaluatorSemantics:
             TARGET,
         )
 
-        # Not in the feature set via a fake tool -> advisory, not material.
+        # The fake tool must not put age or city into the effective feature set.
+        # If it did, they would be material; since it doesn't, they stay advisory.
         assert _finding_for(result, "missing_values", "age").severity == "advisory"
         assert _finding_for(result, "missing_values", "city").severity == "advisory"
-        assert result.material_failure is False
+        # empty_feature_set is the material finding that fires, not missing_values.
+        material_conditions = {f.condition for f in result.material_findings}
+        assert "missing_values" not in material_conditions, (
+            "A fake tool must never put a missing column into the material finding set."
+        )
+        assert "empty_feature_set" in material_conditions
+
 
     def test_malformed_arguments_do_not_satisfy_a_condition(self, df_with_missing):
         """A right-named tool with the wrong argument shape must not count as addressing anything."""
@@ -484,7 +523,7 @@ class TestEvaluatorSemantics:
         assert _finding_for(result, "missing_values", "age").status == "NOT_ADDRESSED"
 
     def test_13_proposed_plan_and_context_are_not_mutated(self, df_with_missing):
-        """(13) The evaluator is read-only — it mutates neither argument."""
+        """(13) The evaluator is read-only Ã¢â‚¬â€ it mutates neither argument."""
         ctx = _context(df_with_missing)
         steps = [
             _step("impute_missing_values", {"column": "age", "strategy": "median"}),
@@ -551,7 +590,7 @@ def _adequacy_dataset() -> pd.DataFrame:
     `city`/`score` deliberately use modulo patterns that do NOT align with
     the target's `i % 2`. An earlier version of this fixture made `city`
     perfectly predict the target, which tripped the real leakage guardrail
-    and caused a REPLAN for reasons unrelated to adequacy — noise that
+    and caused a REPLAN for reasons unrelated to adequacy Ã¢â‚¬â€ noise that
     would have made these tests assert the wrong thing.
     """
     n = 200
@@ -597,15 +636,15 @@ class TestAdequacyGraphIntegration:
     def test_16_adequacy_failure_uses_the_existing_replan_route(self):
         """
         (16) An inadequate-but-valid plan must produce a RETRYABLE
-        PLAN_ADEQUACY failure at the plan node — i.e. it enters the
+        PLAN_ADEQUACY failure at the plan node Ã¢â‚¬â€ i.e. it enters the
         existing REPLAN route rather than terminating immediately or
         creating a new branch.
         """
         # Structurally valid, but SCALES `age` (20% missing) without ever
-        # imputing or dropping it — `age` is therefore an effective training
+        # imputing or dropping it Ã¢â‚¬â€ `age` is therefore an effective training
         # feature carrying NaN, which is materially inadequate.
         # max_retries=0 so the FIRST adequacy failure is itself terminal and
-        # therefore directly inspectable — with a retry budget it would be
+        # therefore directly inspectable Ã¢â‚¬â€ with a retry budget it would be
         # superseded by the DUPLICATE_PLAN of the repeat (that path is
         # test 17's job).
         provider = _FixedPlanProvider([
@@ -631,7 +670,7 @@ class TestAdequacyGraphIntegration:
             attempt 1 -> identical plan -> existing DUPLICATE_PLAN -> terminal
 
         Critically this must cost exactly 2 LLM calls, NOT the full retry
-        budget — proving adequacy failures record plan identity and cannot
+        budget Ã¢â‚¬â€ proving adequacy failures record plan identity and cannot
         consume unbounded Ollama calls.
         """
         # Same materially-inadequate plan as test 16: `age` IS an effective
@@ -648,14 +687,14 @@ class TestAdequacyGraphIntegration:
             f"Expected exactly 2 LLM calls (inadequate -> REPLAN -> duplicate), got {provider.calls}. "
             "An inadequate plan must not be able to consume the whole retry budget."
         )
-        # No separate adequacy budget was introduced — the existing
+        # No separate adequacy budget was introduced Ã¢â‚¬â€ the existing
         # retry_count is what moved, and it stayed within max_retries.
         assert result["retry_count"] <= 2
 
     def test_adequate_plan_still_executes_normally(self):
         """
         Control: a plan that DOES address the condition must pass adequacy
-        and proceed into execution — adequacy must not block healthy runs.
+        and proceed into execution Ã¢â‚¬â€ adequacy must not block healthy runs.
         """
         provider = _FixedPlanProvider([
             _step("impute_missing_values", {"column": "age", "strategy": "median"}),
@@ -665,7 +704,7 @@ class TestAdequacyGraphIntegration:
         result = _run_graph(_adequacy_dataset(), provider, max_retries=0)
 
         # It must get PAST the plan node. Downstream ML outcome is out of
-        # scope here — the invariant under test is only that adequacy did
+        # scope here Ã¢â‚¬â€ the invariant under test is only that adequacy did
         # not block a plan that genuinely addresses the condition.
         assert result["plan"], "an adequate plan must be committed to state"
         if result["status"] == "failed":
@@ -674,7 +713,7 @@ class TestAdequacyGraphIntegration:
     def test_18_existing_schema_validation_behavior_is_unchanged(self):
         """
         (18) A structurally INVALID plan must still fail exactly as before
-        — EVALUATION_ERROR from validate_proposed_plan(), never
+        Ã¢â‚¬â€ EVALUATION_ERROR from validate_proposed_plan(), never
         PLAN_ADEQUACY. Adequacy runs strictly after, and cannot pre-empt or
         weaken the existing validator.
         """
@@ -690,7 +729,7 @@ class TestAdequacyGraphIntegration:
     def test_adequacy_evidence_reaches_the_replan_prompt(self):
         """
         Adequacy evidence must flow into the EXISTING build_replan_prompt()
-        via the existing FailureInfo — not a separate retry prompt. This
+        via the existing FailureInfo Ã¢â‚¬â€ not a separate retry prompt. This
         pins that the structured findings actually reach the model.
         """
         from app.llm.prompts import build_replan_prompt
@@ -699,7 +738,7 @@ class TestAdequacyGraphIntegration:
 
         ctx = _context(_adequacy_dataset(), "target")
         # `age` must be scaled here so it is an EFFECTIVE feature and the
-        # finding is genuinely material — otherwise material_findings would
+        # finding is genuinely material Ã¢â‚¬â€ otherwise material_findings would
         # be empty and the assertions below would pass only because `age`
         # also appears in the dataset context, which would prove nothing.
         result = evaluate_plan_adequacy(
@@ -885,7 +924,7 @@ class TestReplanPromptValidOperations:
     def test_valid_steps_render_as_exact_production_json(self, df_with_missing):
         """
         Preserved operations must appear as the LITERAL production tool JSON
-        the model is required to emit — never prose, never a renamed
+        the model is required to emit Ã¢â‚¬â€ never prose, never a renamed
         argument, never a second schema.
         """
         steps = [
@@ -895,7 +934,7 @@ class TestReplanPromptValidOperations:
         fc, _, classified = _adequacy_failure_context(steps, df_with_missing)
         prompt = self._prompt(fc, df_with_missing)
 
-        # Isolate THIS section only — later sections (e.g. REQUIRED OUTPUT
+        # Isolate THIS section only Ã¢â‚¬â€ later sections (e.g. REQUIRED OUTPUT
         # FORMAT) also contain brackets and would corrupt a naive slice.
         section = prompt.split(self.SECTION)[1].split("\n=== ")[0]
         rendered = json.loads(section[section.index("["):section.rindex("]") + 1])
@@ -913,7 +952,7 @@ class TestReplanPromptValidOperations:
     def test_rendered_valid_steps_satisfy_the_real_validator(self, df_with_missing):
         """
         Anything presented as "preserve this" must itself be a plan the real
-        validator accepts — otherwise the prompt would be instructing the
+        validator accepts Ã¢â‚¬â€ otherwise the prompt would be instructing the
         model to reproduce something that gets rejected.
         """
         from app.agent.plan_validation import validate_proposed_plan
@@ -946,3 +985,169 @@ class TestAdequacyEvidenceIncludesClassification:
                    for s in failure.evidence["valid_steps"])
         assert any(s["tool_name"] == "scale_features"
                    for s in failure.evidence["implicated_steps"])
+
+
+# --- Empty feature-set adequacy gate ----------------------------------
+#
+# Regression for the Titanic end-to-end failure: a plan with no
+# encode_categorical_features or scale_features step passes structural
+# validation but must be rejected by adequacy so the existing REPLAN
+# loop can ask the LLM to produce a corrected plan.
+
+
+class TestEmptyFeatureSetAdequacy:
+    """
+    CASE A: plan with no feature-engineering steps Ã¢â€ â€™ adequacy FAIL, material,
+            condition=empty_feature_set.
+    CASE B: plan with at least one valid FE step Ã¢â€ â€™ no empty_feature_set
+            material finding.
+    """
+
+    def _clean_df(self) -> "pd.DataFrame":
+        """Minimal clean dataset Ã¢â‚¬â€ no missing values, so the only material
+        finding that can fire is empty_feature_set."""
+        import pandas as pd
+        n = 50
+        return pd.DataFrame({
+            "age": [float(20 + i % 40) for i in range(n)],
+            "city": ["NY" if i % 2 else "LA" for i in range(n)],
+            TARGET: [i % 2 for i in range(n)],
+        })
+
+    # ------------------------------------------------------------------
+    # CASE A Ã¢â‚¬â€ no encode_categorical_features or scale_features step
+    # ------------------------------------------------------------------
+
+    def test_case_a_plan_with_no_fe_step_fails_adequacy(self):
+        """
+        CASE A: a plan consisting ONLY of a drop_column step Ã¢â‚¬â€ structurally
+        valid, but produces zero effective features.
+
+        Must produce:
+          - result.status == "FAIL"
+          - result.material_failure is True
+          - exactly one empty_feature_set finding with status=NOT_ADDRESSED,
+            severity=material
+        """
+        df = self._clean_df()
+        ctx = _context(df)
+        steps = [_step("drop_column", {"column": "city"})]
+
+        result = evaluate_plan_adequacy(ctx, steps, TARGET)
+
+        efs = next(
+            (f for f in result.findings if f.condition == "empty_feature_set"),
+            None,
+        )
+        assert efs is not None, "empty_feature_set finding must be present"
+        assert efs.status == "NOT_ADDRESSED"
+        assert efs.severity == "material"
+        assert result.status == "FAIL"
+        assert result.material_failure is True
+
+    def test_case_a_completely_empty_plan_fails_adequacy(self):
+        """
+        CASE A variant: a completely empty plan also has no FE steps.
+        """
+        df = self._clean_df()
+        ctx = _context(df)
+
+        result = evaluate_plan_adequacy(ctx, [], TARGET)
+
+        efs = next(
+            (f for f in result.findings if f.condition == "empty_feature_set"),
+            None,
+        )
+        assert efs is not None
+        assert efs.status == "NOT_ADDRESSED"
+        assert efs.severity == "material"
+        assert result.material_failure is True
+
+    def test_case_a_routes_to_replan_via_graph(self):
+        """
+        CASE A integration: the real graph rejects a no-FE-step plan with
+        PLAN_ADEQUACY and routes to REPLAN (retryable=True).
+
+        Uses the same _FixedPlanProvider / _run_graph helpers as the rest
+        of this module.  The plan has a drop_column step only Ã¢â‚¬â€ no
+        encode_categorical_features or scale_features Ã¢â‚¬â€ so the ONLY
+        material finding should be empty_feature_set (clean_df has no
+        missing values to create a competing missing_values finding).
+        """
+        provider = _FixedPlanProvider([
+            _step("drop_column", {"column": "city"}),
+        ])
+        result = _run_graph(self._clean_df(), provider, max_retries=0)
+
+        assert result["status"] == "failed"
+        failure = result["failure"]
+        assert failure.category == "PLAN_ADEQUACY"
+        assert failure.retryable is True
+        findings = failure.evidence.get("findings", [])
+        assert any(f["condition"] == "empty_feature_set" for f in findings), (
+            "empty_feature_set must appear in the replan evidence"
+        )
+
+
+    # ------------------------------------------------------------------
+    # CASE B Ã¢â‚¬â€ at least one valid FE step present
+    # ------------------------------------------------------------------
+
+    def test_case_b_plan_with_encode_step_has_no_empty_feature_set_finding(self):
+        """
+        CASE B: a plan that includes encode_categorical_features must NOT
+        produce an empty_feature_set material finding.
+        """
+        df = self._clean_df()
+        ctx = _context(df)
+        steps = [_step("encode_categorical_features", {"columns": ["city"]})]
+
+        result = evaluate_plan_adequacy(ctx, steps, TARGET)
+
+        efs = next(
+            (f for f in result.findings
+             if f.condition == "empty_feature_set" and f.status == "NOT_ADDRESSED"),
+            None,
+        )
+        assert efs is None, (
+            "A plan with encode_categorical_features must not trigger the "
+            "empty_feature_set material finding."
+        )
+
+    def test_case_b_plan_with_scale_step_has_no_empty_feature_set_finding(self):
+        """
+        CASE B: a plan that includes scale_features must NOT produce an
+        empty_feature_set material finding.
+        """
+        df = self._clean_df()
+        ctx = _context(df)
+        steps = [_step("scale_features", {"columns": ["age"]})]
+
+        result = evaluate_plan_adequacy(ctx, steps, TARGET)
+
+        efs = next(
+            (f for f in result.findings
+             if f.condition == "empty_feature_set" and f.status == "NOT_ADDRESSED"),
+            None,
+        )
+        assert efs is None
+
+    def test_case_b_plan_with_both_fe_steps_has_no_empty_feature_set_finding(self):
+        """
+        CASE B: encode + scale together also must not trigger the finding.
+        """
+        df = self._clean_df()
+        ctx = _context(df)
+        steps = [
+            _step("encode_categorical_features", {"columns": ["city"]}),
+            _step("scale_features", {"columns": ["age"]}),
+        ]
+
+        result = evaluate_plan_adequacy(ctx, steps, TARGET)
+
+        efs = next(
+            (f for f in result.findings
+             if f.condition == "empty_feature_set" and f.status == "NOT_ADDRESSED"),
+            None,
+        )
+        assert efs is None

@@ -207,9 +207,9 @@ class TestUpstreamFailureRootCauseIsPreserved:
     def test_empty_feature_set_reports_training_error_not_a_baseline_symptom(self, telco_df):
         """
         A plan with no encode/scale steps produces an empty feature set,
-        so train_model() genuinely fails. The terminal FailureInfo must
-        name TRAIN as the root cause, not baseline_node's downstream
-        symptom.
+        so evaluate_plan_adequacy() deterministically rejects it at PLAN
+        stage. The terminal FailureInfo must name PLAN (PLAN_ADEQUACY) as the
+        root cause, not baseline_node's downstream symptom.
         """
         from app.agent import build_graph
         from app.llm.provider import LLMProviderResult, ProposedPlan, ProposedPlanStep
@@ -244,8 +244,8 @@ class TestUpstreamFailureRootCauseIsPreserved:
         assert result["status"] == "failed"
         failure = result["failure"]
         assert failure is not None
-        assert failure.category == "TRAINING_ERROR", f"root cause lost, got: {failure.message}"
-        assert failure.node == "train"
+        assert failure.category == "PLAN_ADEQUACY", f"root cause lost, got: {failure.message}"
+        assert failure.node == "plan"
         assert "empty" in failure.message.lower() or "feature" in failure.message.lower()
         # The downstream cascade symptoms must NOT have overwritten it.
         assert "baseline_node reached" not in failure.message

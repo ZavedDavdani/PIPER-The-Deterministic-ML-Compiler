@@ -414,6 +414,15 @@ export interface OllamaStatusResponse {
   error: string | null
 }
 
+export interface ProviderStatusResponse {
+  provider: string
+  model: string
+  reachable: boolean
+  available_models: string[]
+  details: Record<string, unknown>
+  error: string | null
+}
+
 export type GovernanceAvailability = 'AVAILABLE' | 'NOT_AVAILABLE' | 'NOT_REQUESTED'
 export type FairnessStatus = 'AVAILABLE' | 'NOT_REQUESTED' | 'INSUFFICIENT_DATA' | 'NOT_AVAILABLE'
 

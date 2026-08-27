@@ -70,7 +70,12 @@ exactly this shape:
 }
 
 Do not include markdown code fences, explanations, or any text outside \
-this JSON object."""
+this JSON object.
+
+Every step's "arguments" object MUST include ALL required fields for that \
+tool_name. An empty arguments object ({}) is NEVER valid. For example, \
+drop_column REQUIRES {"column": "<non-empty column name>"} — never omit \
+column and never pass an empty string."""
 
 
 def _format_dataset_context(dataset_context: dict) -> str:
@@ -225,6 +230,45 @@ def _format_exact_tool_contracts(allowed_operations: list[str], tool_schemas: di
     return "\n".join(lines).rstrip()
 
 
+def _format_validation_violations(failure_context: dict | None) -> str:
+    """
+    Renders deterministic validation violations from a FailureInfo-shaped
+    dict into an explicit REPLAN instruction block.
+    """
+    if not isinstance(failure_context, dict):
+        return ""
+    evidence = failure_context.get("evidence")
+    if not isinstance(evidence, dict):
+        return ""
+
+    violations = evidence.get("violations")
+    if not isinstance(violations, list) or not violations:
+        return ""
+
+    lines = [
+        "Your previous proposal was REJECTED by deterministic validation.",
+        "You MUST fix every violation below. Do NOT resubmit the same tool_name/arguments.",
+        "",
+    ]
+    for violation in violations:
+        if not isinstance(violation, dict):
+            continue
+        tool_name = violation.get("tool_name", "?")
+        field = violation.get("field", "?")
+        reason = violation.get("reason", "invalid")
+        step_index = violation.get("step_index", "?")
+        lines.append(f"- Step {step_index}: {tool_name}.{field} — {reason}")
+
+    rejected_steps = evidence.get("rejected_steps")
+    if isinstance(rejected_steps, list) and rejected_steps:
+        lines.append("")
+        lines.append("Rejected steps (arguments shown exactly as submitted):")
+        for step in rejected_steps:
+            lines.append(json.dumps(step, default=str))
+
+    return "\n".join(lines)
+
+
 def _valid_steps_from_failure_context(failure_context: dict | None) -> list | None:
     """
     Extracts `evidence.valid_steps` from a FailureInfo-shaped dict, if
@@ -359,6 +403,14 @@ def build_replan_prompt(context: LLMPlanningContext) -> str:
         "=== FAILURE CONTEXT (why the previous attempt did not pass) ===",
         json.dumps(context.failure_context, indent=2, sort_keys=True, default=str),
     ]
+
+    violation_section = _format_validation_violations(context.failure_context)
+    if violation_section:
+        sections += [
+            "",
+            "=== VALIDATION VIOLATIONS (you must correct these) ===",
+            violation_section,
+        ]
 
     valid_steps = _valid_steps_from_failure_context(context.failure_context)
     if valid_steps is not None:

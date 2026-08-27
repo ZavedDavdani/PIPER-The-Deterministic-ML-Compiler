@@ -115,6 +115,8 @@ ProviderErrorCode = Literal[
     "invalid_plan_schema",
     "provider_unavailable",
     "timeout",
+    "authentication_error",
+    "rate_limit",
     "http_error",
 ]
 

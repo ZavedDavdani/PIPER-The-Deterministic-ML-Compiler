@@ -515,7 +515,13 @@ class TestOllamaProviderRequestConstruction:
         assert captured["body"]["model"] == "qwen3:4b"
         assert captured["body"]["stream"] is False
         assert "prompt" in captured["body"]
-        assert captured["body"]["format"] == PLAN_JSON_SCHEMA
+        from app.llm.plan_schema import build_plan_json_schema
+
+        expected_format = build_plan_json_schema(
+            sample_context.allowed_operations,
+            sample_context.tool_schemas or None,
+        )
+        assert captured["body"]["format"] == expected_format
         # Confirms the objective and allowed operations actually reached
         # the constructed prompt sent over the wire, not just the
         # in-process prompt builder.

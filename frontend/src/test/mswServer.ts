@@ -164,6 +164,33 @@ export const handlers = [
     })
   }),
 
+  http.get(`${API_BASE_URL}/settings/provider`, () => {
+    return HttpResponse.json({
+      provider: 'openai',
+      model: 'gpt-5.6-luna',
+      reachable: true,
+      available_models: [],
+      details: { has_api_key: true, base_url: null },
+      error: null,
+    })
+  }),
+
+  http.put(`${API_BASE_URL}/settings/provider`, async ({ request }) => {
+    const body = (await request.json()) as {
+      provider?: string
+      model?: string
+      host?: string
+    }
+    return HttpResponse.json({
+      provider: body.provider ?? 'openai',
+      model: body.model ?? 'gpt-5.6-luna',
+      reachable: true,
+      available_models: [],
+      details: { has_api_key: true, base_url: null },
+      error: null,
+    })
+  }),
+
   http.put(`${API_BASE_URL}/settings/ollama`, async ({ request }) => {
     const body = (await request.json()) as { model?: string; host?: string }
     return HttpResponse.json({

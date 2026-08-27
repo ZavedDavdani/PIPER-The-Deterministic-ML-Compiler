@@ -14,14 +14,9 @@ Run locally with:
 
     uvicorn app.main:app --reload
 
-The real OllamaProvider is the default llm_provider — same
-environment-variable-driven configuration used everywhere else in this
-codebase (PIPER_OLLAMA_HOST / PIPER_LLM_MODEL /
-PIPER_OLLAM_TIMEOUT_SECONDS), never hardcoded here. Tests override
-app.state.llm_provider via FastAPI's dependency_overrides (see
-tests/test_api_runs.py) rather than talking to a real Ollama server —
-consistent with the rest of the suite's "the normal suite is never
-Ollama-dependent" rule.
+The repository-root ``.env`` is loaded automatically at startup
+(see ``app.env.load_project_env``). The default ``llm_provider`` is
+selected via ``PIPER_LLM_PROVIDER`` (``openai`` or ``ollama``).
 """
 
 from __future__ import annotations
@@ -29,6 +24,10 @@ from __future__ import annotations
 import os
 from contextlib import asynccontextmanager
 from pathlib import Path
+
+from app.env import load_project_env
+
+load_project_env()
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -38,7 +37,7 @@ from app.api.routers.learning import router as learning_router
 from app.api.routers.predict import router as predict_router
 from app.api.routers.runs import router as runs_router
 from app.api.routers.settings import router as settings_router
-from app.llm.ollama_provider import OllamaProvider
+from app.llm import create_llm_provider
 from app.storage import (
     InMemoryDatasetStore,
     InMemoryExplorationStore,
@@ -77,7 +76,7 @@ async def lifespan(app: FastAPI):
     app.state.model_store = InMemoryModelStore()
     app.state.run_store = create_run_store()
     app.state.exploration_store = InMemoryExplorationStore()
-    app.state.llm_provider = OllamaProvider()
+    app.state.llm_provider = create_llm_provider()
     artifact_root = Path(os.environ.get("PIPER_ARTIFACT_DIR", "artifacts"))
     artifact_root.mkdir(parents=True, exist_ok=True)
     app.state.artifact_dir = artifact_root

@@ -567,8 +567,17 @@ class TestValidateRoutingDoesNotLoopWithoutBudgetedRetries:
         # additionally marked retryable=False, denying the genuinely
         # fixable root cause its remaining budgeted retry.
         assert result["failure"] is not None
-        assert result["failure"].node == "train"
-        assert result["failure"].category == "TRAINING_ERROR"
+        # With the empty_feature_set adequacy gate introduced alongside this
+        # Batch 7 routing fix, the "drop all columns" plan (call 2) is now
+        # caught at PLAN-adequacy time rather than reaching TRAIN.  The
+        # root-cause failure is now PLAN_ADEQUACY at node="plan" (retryable,
+        # since the LLM could produce a better plan).  The fundamental
+        # invariant — the reported failure is retryable=True AND after budget
+        # exhaustion gets escalated to human_intervention_required=True — is
+        # unchanged; only the detection layer moved upstream (earlier is
+        # better: adequacy prevents the expensive train cycle entirely).
+        assert result["failure"].node == "plan"
+        assert result["failure"].category == "PLAN_ADEQUACY"
         assert result["failure"].retryable is True
         # Retry budget exhausted on a retryable failure -> escalate.
         assert result["failure"].human_intervention_required is True
