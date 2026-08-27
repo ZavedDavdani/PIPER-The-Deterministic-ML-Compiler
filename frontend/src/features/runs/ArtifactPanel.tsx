@@ -15,6 +15,7 @@ const FILE_LABELS: Record<string, string> = {
   'training_reproduction.ipynb': 'Reproduction notebook',
   'manifest.json': 'Manifest',
   'evidence.json': 'Evidence',
+  'requirements.txt': 'Requirements',
   'hashes.json': 'SHA-256 hashes',
 }
 

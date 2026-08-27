@@ -30,9 +30,23 @@ BUNDLE_FILES = (
     "training_reproduction.ipynb",
     "manifest.json",
     "evidence.json",
+    "requirements.txt",
 )
 DOWNLOADABLE_FILES = BUNDLE_FILES + ("hashes.json",)
 STATUS_FILENAME = "status.json"
+
+
+def _requirements_text(manifest: dict) -> str:
+    versions = manifest.get("library_versions") or {}
+    pandas_v = versions.get("pandas") or "3.0.2"
+    sklearn_v = versions.get("scikit-learn") or "1.8.0"
+    joblib_v = versions.get("joblib") or "1.4.2"
+    lines = [
+        f"pandas=={pandas_v}" if pandas_v != "unknown" else "pandas",
+        f"scikit-learn=={sklearn_v}" if sklearn_v != "unknown" else "scikit-learn",
+        f"joblib=={joblib_v}" if joblib_v != "unknown" else "joblib",
+    ]
+    return "\n".join(lines) + "\n"
 
 
 def _pkg_version(name: str) -> str:
@@ -259,6 +273,7 @@ def publish_run_artifacts(
             "filenames": list(DOWNLOADABLE_FILES),
         }
         (staging / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8")
+        (staging / "requirements.txt").write_text(_requirements_text(manifest), encoding="utf-8")
         write_hashes_manifest(staging, list(BUNDLE_FILES))
 
         status = _status_payload(

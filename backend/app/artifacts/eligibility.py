@@ -15,6 +15,8 @@ from app.storage.exceptions import ModelNotFoundError, SplitNotFoundError
 from app.storage.model_store import InMemoryModelStore, ModelArtifact
 from app.storage.split_store import SplitStore
 
+from app.state_access import field, winner_id as _winner_id
+
 
 def require_eligible_run(
     record: Any,
@@ -39,31 +41,30 @@ def require_eligible_run(
             "Completed run has no final_state snapshot.",
         )
 
-    validation = getattr(state, "validation", None)
-    if validation is None or getattr(validation, "valid", False) is not True:
+    validation = field(state, "validation")
+    if validation is None or field(validation, "valid") is not True:
         raise ArtifactEligibilityError(
             "guardrails_not_passed",
             "Deployable artifacts require validation.valid is True.",
             {"validation_present": validation is not None},
         )
 
-    comparison = getattr(state, "comparison", None)
-    winner_id = getattr(comparison, "recommended_model_id", None) if comparison is not None else None
-    if not winner_id:
+    winner_model_id = _winner_id(state)
+    if not winner_model_id:
         raise ArtifactEligibilityError(
             "no_winning_model",
             "No recommended_model_id on the completed run.",
         )
 
     try:
-        artifact = model_store.get(winner_id)
+        artifact = model_store.get(winner_model_id)
     except ModelNotFoundError as exc:
         raise ArtifactEligibilityError(
             "winning_pipeline_unavailable",
             "The fitted winning pipeline is not in ModelStore. "
             "Artifact export requires the in-process fitted object, "
             "not a reconstruction from the LLM plan.",
-            {"model_id": winner_id},
+            {"model_id": winner_model_id},
         ) from exc
 
     split_id = artifact.metadata.split_id
@@ -71,7 +72,7 @@ def require_eligible_run(
         raise ArtifactEligibilityError(
             "evaluation_split_unavailable",
             "The evaluation split used by the winning model is not available.",
-            {"split_id": split_id, "model_id": winner_id},
+            {"split_id": split_id, "model_id": winner_model_id},
         )
 
     try:
@@ -80,7 +81,7 @@ def require_eligible_run(
         raise ArtifactEligibilityError(
             "evaluation_split_unavailable",
             "The evaluation split used by the winning model is not available.",
-            {"split_id": split_id, "model_id": winner_id},
+            {"split_id": split_id, "model_id": winner_model_id},
         ) from exc
 
     pipeline = getattr(artifact, "pipeline", None)
@@ -88,7 +89,7 @@ def require_eligible_run(
         raise ArtifactEligibilityError(
             "winning_pipeline_unavailable",
             "ModelStore artifact has no fitted predict() pipeline.",
-            {"model_id": winner_id},
+            {"model_id": winner_model_id},
         )
 
     return state, artifact

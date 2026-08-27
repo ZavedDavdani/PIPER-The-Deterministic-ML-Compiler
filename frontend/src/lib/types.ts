@@ -265,8 +265,22 @@ export interface TraceEvent {
   message: string
 }
 
+export interface ApiValidationErrorItem {
+  type?: string
+  loc?: (string | number)[]
+  msg?: string
+  input?: unknown
+}
+
 export interface ApiErrorBody {
-  detail: string | { code?: string; message?: string; details?: unknown }
+  detail: string | { code?: string; message?: string; details?: unknown } | ApiValidationErrorItem[]
+}
+
+export interface CreateExplorationRequest {
+  base_model_id: string
+  new_algorithm?: 'logistic_regression' | 'random_forest'
+  hyperparameter_name?: string
+  hyperparameter_value?: number
 }
 
 // --- V1.2 productization (decision trace / verdict / intervention / evidence) ---

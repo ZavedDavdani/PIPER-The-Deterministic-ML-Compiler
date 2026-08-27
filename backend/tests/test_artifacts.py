@@ -28,6 +28,7 @@ from app.schemas.training import FeatureEngineeringIntent
 from app.storage.model_store import InMemoryModelStore
 from app.storage.run_store import InMemoryRunStore
 from app.storage.split_store import InMemorySplitStore
+from app.storage.sqlite_run_store import restore_state, serialize_state
 
 
 def _split_frames() -> tuple[pd.DataFrame, pd.DataFrame]:
@@ -145,6 +146,22 @@ class TestEligibility:
             require_eligible_run(run_store.get("run_missing"), model_store, split_store)
         assert exc.value.code == "winning_pipeline_unavailable"
 
+    def test_sqlite_round_trip_validation_dict_remains_eligible(self):
+        """Regression: persisted final_state nests validation as a dict after SQLite restore."""
+        split_store = InMemorySplitStore()
+        model_store = InMemoryModelStore()
+        model_id = _train_winner(split_store, model_store)
+        state = _eligible_state("run_sqlite", model_id)
+        restored_state = restore_state(serialize_state(state))
+
+        class _Record:
+            status = "completed"
+            final_state = restored_state
+
+        got_state, artifact = require_eligible_run(_Record(), model_store, split_store)
+        assert getattr(got_state, "status", None) == "completed"
+        assert artifact.metadata.model_id == model_id
+
 
 class TestJoblibParity:
     def test_reload_matches_in_memory_holdout_predictions(self, tmp_path: Path):
@@ -200,6 +217,7 @@ class TestPublishBundle:
             "training_reproduction.ipynb",
             "manifest.json",
             "evidence.json",
+            "requirements.txt",
             "hashes.json",
         ):
             assert (bundle / name).is_file(), name
@@ -207,6 +225,7 @@ class TestPublishBundle:
         assert manifest["artifact_status"] == "VERIFIED"
         hashes = json.loads((bundle / "hashes.json").read_text(encoding="utf-8"))
         assert "pipeline.joblib" in hashes["files"]
+        assert "requirements.txt" in hashes["files"]
         assert "hashes.json" not in hashes["files"]
         source = (bundle / "pipeline.py").read_text(encoding="utf-8")
         assert "import ollama" not in source

@@ -1,4 +1,4 @@
-﻿"""
+"""
 End-to-End Titanic Verification Script.
 Executes a real run through the FastAPI application, verifies all stages,
 artifacts, parity, governance, Student Mode, Engineer Mode, Test Flight, and Deployment.
@@ -23,10 +23,13 @@ def run_titanic_verification():
         print(f"1. Health check: status={health_res.status_code}, data={health_res.json()}", flush=True)
         assert health_res.status_code == 200
 
-        # 2. Check provider settings
-        prov_res = client.get("/settings/provider")
-        print(f"2. Provider status: status={prov_res.status_code}, data={prov_res.json()}", flush=True)
-        assert prov_res.status_code == 200
+        # 2. Configure provider to Gemini
+        prov_update = client.put("/settings/provider", json={"provider": "gemini", "model": "gemini-3.6-flash"})
+        print(f"2. Provider configured: status={prov_update.status_code}, data={prov_update.json()}", flush=True)
+        assert prov_update.status_code == 200
+        assert prov_update.json()["provider"] == "gemini"
+        assert prov_update.json()["model"] == "gemini-3.6-flash"
+        assert prov_update.json()["reachable"] is True
 
         # 3. Ingest Titanic dataset
         titanic_path = Path("../benchmark_data/train.csv")
@@ -78,8 +81,28 @@ def run_titanic_verification():
             print(f"   Detail: {publish_res.text}", flush=True)
         assert publish_res.status_code == 201
         artifact_status = publish_res.json()
-        print(f"   Artifact Status: eligible={artifact_status.get('eligible')}, parity={artifact_status.get('parity')}", flush=True)
-        assert artifact_status.get("parity", {}).get("verified") is True, "Artifact parity verification failed"
+        print(f"   Artifact Status: artifact_status={artifact_status.get('artifact_status')}, parity_status={artifact_status.get('parity_status')}", flush=True)
+        assert artifact_status.get("artifact_status") == "VERIFIED", "Artifact status is not VERIFIED"
+        assert artifact_status.get("parity_status") == "passed", "Parity status is not passed"
+
+        # 6b. Verify Required Artifact Bundle Files
+        files_res = client.get(f"/runs/{run_id}/artifacts/files")
+        assert files_res.status_code == 200
+        published_files = files_res.json().get("files", [])
+        print(f"   Published Artifact Files: {published_files}", flush=True)
+        for expected_file in (
+            "pipeline.joblib",
+            "pipeline.py",
+            "training_reproduction.ipynb",
+            "manifest.json",
+            "evidence.json",
+            "requirements.txt",
+            "hashes.json",
+        ):
+            assert expected_file in published_files, f"Missing expected artifact file: {expected_file}"
+            file_dl = client.get(f"/runs/{run_id}/artifacts/files/{expected_file}")
+            assert file_dl.status_code == 200, f"Failed to download {expected_file}"
+            assert len(file_dl.content) > 0, f"Empty artifact file: {expected_file}"
 
         # 7. Verify Governance Bundle
         print("7. Verifying Governance Evidence...", flush=True)
@@ -106,23 +129,64 @@ def run_titanic_verification():
         print(f"   Predictions on unseen rows: {predictions}", flush=True)
         assert len(predictions) == 3
 
-        # 9. Verify Student Mode Endpoints
-        print("9. Verifying Student Mode endpoints...", flush=True)
+        # 9. Verify What-If Controlled Experiments Sandbox
+        print("9. Verifying What-If Controlled Experiments Sandbox...", flush=True)
+        result_before_whatif = client.get(f"/runs/{run_id}/result").json()
+        artifact_before_whatif = client.get(f"/runs/{run_id}/artifacts").json()
+        winning_model_id = artifact_status.get("winning_model_id") or result_before_whatif.get("comparison", {}).get("recommended_model_id")
+
+        # 9a. Test invalid hyperparameter rejection
+        invalid_whatif = client.post(
+            f"/runs/{run_id}/explore",
+            json={
+                "base_model_id": winning_model_id,
+                "hyperparameter_name": "n_estimators",
+                "hyperparameter_value": 0.1,
+            },
+        )
+        print(f"   Invalid What-If status (expected 400): {invalid_whatif.status_code}", flush=True)
+        assert invalid_whatif.status_code == 400
+
+        # 9b. Test valid What-If hyperparameter execution
+        valid_whatif = client.post(
+            f"/runs/{run_id}/explore",
+            json={
+                "base_model_id": winning_model_id,
+                "hyperparameter_name": "n_estimators",
+                "hyperparameter_value": 100,
+            },
+        )
+        print(f"   Valid What-If status (expected 201): {valid_whatif.status_code}", flush=True)
+        assert valid_whatif.status_code == 201
+        whatif_data = valid_whatif.json()
+        print(f"   What-If Experiment ID: {whatif_data.get('experiment_id')}", flush=True)
+        print(f"   What-If F1: {whatif_data.get('evaluation', {}).get('f1')}", flush=True)
+        assert whatif_data.get("experiment_id", "").startswith("exp_")
+
+        # 9c. Verify Base Run & Verified Artifact Isolation
+        result_after_whatif = client.get(f"/runs/{run_id}/result").json()
+        artifact_after_whatif = client.get(f"/runs/{run_id}/artifacts").json()
+        assert result_before_whatif == result_after_whatif, "Original run state was mutated by What-If experiment!"
+        assert artifact_before_whatif == artifact_after_whatif, "Original artifact was mutated by What-If experiment!"
+        print("   What-If isolation verified: base run and verified artifact remain 100% unchanged.", flush=True)
+
+        # 10. Verify Student Mode Endpoints
+        print("10. Verifying Student Mode endpoints...", flush=True)
         journey_res = client.get(f"/runs/{run_id}/learn/journey")
         print(f"   Student Journey: status={journey_res.status_code}, stages={len(journey_res.json().get('stages', []))}", flush=True)
         assert journey_res.status_code == 200
         assert len(journey_res.json().get("stages", [])) >= 10
 
-        explain_res = client.get(f"/runs/{run_id}/learn/explain?level=beginner")
-        print(f"   Student Explain: status={explain_res.status_code}, summary length={len(explain_res.json().get('summary', ''))}", flush=True)
+        explain_res = client.get(f"/runs/{run_id}/learn/explanation?level=beginner")
+        print(f"   Student Explain: status={explain_res.status_code}", flush=True)
         assert explain_res.status_code == 200
 
         pipeline_res = client.get(f"/runs/{run_id}/learn/pipeline")
-        print(f"   Student Pipeline: status={pipeline_res.status_code}, steps={len(pipeline_res.json().get('steps', []))}", flush=True)
+        print(f"   Student Pipeline: status={pipeline_res.status_code}, steps={len(pipeline_res.json().get('nodes', []))}", flush=True)
         assert pipeline_res.status_code == 200
 
-        # 10. Verify Engineer Mode Endpoints
-        print("10. Verifying Engineer Mode endpoints...", flush=True)
+        # 11. Verify Engineer Mode Endpoints
+        print("11. Verifying Engineer Mode endpoints...", flush=True)
         timeline_res = client.get(f"/runs/{run_id}/timeline")
         print(f"   Execution Timeline: status={timeline_res.status_code}, phases={len(timeline_res.json().get('phases', []))}", flush=True)
         assert timeline_res.status_code == 200
@@ -135,8 +199,8 @@ def run_titanic_verification():
         print(f"   Evidence: status={evidence_res.status_code}, run_id={evidence_res.json().get('run_id')}", flush=True)
         assert evidence_res.status_code == 200
 
-        # 11. Verify Deployment Readiness & Package
-        print("11. Verifying Deployment endpoints...", flush=True)
+        # 12. Verify Deployment Readiness & Package
+        print("12. Verifying Deployment endpoints...", flush=True)
         deploy_res = client.get(f"/runs/{run_id}/deployment")
         print(f"   Deployment Readiness: status={deploy_res.status_code}, readiness={deploy_res.json().get('status')}", flush=True)
         assert deploy_res.status_code == 200
@@ -145,7 +209,7 @@ def run_titanic_verification():
         print(f"   Deployment Package: status={pkg_res.status_code}, files={pkg_res.json().get('files')}", flush=True)
         assert pkg_res.status_code == 201
 
-        # 12. Run summary & result
+        # 13. Run summary & result
         summary_res = client.get(f"/runs/{run_id}/summary")
         assert summary_res.status_code == 200
         summary_data = summary_res.json()
@@ -162,9 +226,15 @@ def run_titanic_verification():
             "winning_model": summary_data.get("winning_model"),
             "candidate_models": summary_data.get("candidate_models"),
             "baseline": result_data.get("baseline"),
-            "parity_verified": artifact_status.get("parity", {}).get("verified"),
-            "parity_max_abs_diff": artifact_status.get("parity", {}).get("max_abs_diff"),
+            "artifact_status": artifact_status.get("artifact_status"),
+            "parity_status": artifact_status.get("parity_status"),
+            "artifact_files": published_files,
             "test_flight_predictions": predictions,
+            "what_if_experiment": {
+                "experiment_id": whatif_data.get("experiment_id"),
+                "f1": whatif_data.get("evaluation", {}).get("f1"),
+                "variable": whatif_data.get("variable_changed"),
+            },
             "stages_count": len(journey_res.json().get("stages", [])),
             "timeline_phases": len(timeline_res.json().get("phases", [])),
             "deployment_status": deploy_res.json().get("status"),

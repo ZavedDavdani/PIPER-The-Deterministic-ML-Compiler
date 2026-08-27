@@ -98,6 +98,13 @@ def _validate_params(algorithm: str, params: dict) -> ToolError | None:
                 message=f"Parameter '{key}' must be numeric; got {type(value).__name__}.",
                 details={"algorithm": algorithm, "parameter": key, "value": value},
             )
+        if key in ("n_estimators", "max_depth", "min_samples_split", "min_samples_leaf", "max_iter"):
+            if isinstance(value, float) and not value.is_integer():
+                return ToolError(
+                    code="invalid_hyperparameter_type",
+                    message=f"Parameter '{key}' must be a whole number; got {value}.",
+                    details={"algorithm": algorithm, "parameter": key, "value": value},
+                )
         if not (low <= value <= high):
             return ToolError(
                 code="hyperparameter_out_of_bounds",

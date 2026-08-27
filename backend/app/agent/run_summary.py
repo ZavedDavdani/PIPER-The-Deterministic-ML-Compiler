@@ -22,35 +22,38 @@ like RunResultResponse's own construction in app/api/routers/runs.py.
 
 from __future__ import annotations
 
+from app.state_access import field
 from app.schemas.run_summary import RunSummary
 
 
 def build_run_summary(run_id: str, state) -> RunSummary:
-    comparison = getattr(state, "comparison", None)
-    validation = getattr(state, "validation", None)
-    cleaning_log = list(getattr(state, "cleaning_log", []) or [])
-    feature_log = list(getattr(state, "feature_log", []) or [])
-    retry_count = getattr(state, "retry_count", 0)
+    comparison = field(state, "comparison")
+    validation = field(state, "validation")
+    cleaning_log = list(field(state, "cleaning_log", default=[]) or [])
+    feature_log = list(field(state, "feature_log", default=[]) or [])
+    retry_count = field(state, "retry_count", default=0)
 
     winning_algorithm = None
+    recommended_model_id = field(comparison, "recommended_model_id")
+    models = field(comparison, "models", default=[]) or []
     if comparison is not None:
-        for entry in comparison.models:
-            if entry.model_id == comparison.recommended_model_id:
-                winning_algorithm = entry.algorithm
+        for entry in models:
+            if field(entry, "model_id") == recommended_model_id:
+                winning_algorithm = field(entry, "algorithm")
                 break
 
     return RunSummary(
         run_id=run_id,
-        status=getattr(state, "status", "unknown"),
+        status=field(state, "status", default="unknown"),
         retry_count=retry_count,
         replanned=retry_count > 0,
-        candidate_models=list(comparison.models) if comparison is not None else [],
-        winning_model_id=comparison.recommended_model_id if comparison is not None else None,
+        candidate_models=list(models) if comparison is not None else [],
+        winning_model_id=recommended_model_id if comparison is not None else None,
         winning_algorithm=winning_algorithm,
-        selection_justification=comparison.justification if comparison is not None else None,
+        selection_justification=field(comparison, "justification") if comparison is not None else None,
         operations_executed=cleaning_log + feature_log,
-        guardrail_valid=validation.valid if validation is not None else None,
-        guardrail_checks=list(validation.checks) if validation is not None else [],
-        guardrail_violations=list(validation.violations) if validation is not None else [],
-        guardrail_warnings=list(validation.warnings) if validation is not None else [],
+        guardrail_valid=field(validation, "valid") if validation is not None else None,
+        guardrail_checks=list(field(validation, "checks", default=[]) or []) if validation is not None else [],
+        guardrail_violations=list(field(validation, "violations", default=[]) or []) if validation is not None else [],
+        guardrail_warnings=list(field(validation, "warnings", default=[]) or []) if validation is not None else [],
     )

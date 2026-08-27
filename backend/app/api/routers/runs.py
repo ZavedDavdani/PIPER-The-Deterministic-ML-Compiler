@@ -48,6 +48,7 @@ from app.deployment.paths import PACKAGE_FILES, package_dir
 from app.deployment.predict import predict_unseen
 from app.deployment.readiness import check_deployment_readiness
 from app.schemas.deployment import DeploymentPackageResponse, DeploymentReadinessResponse, PredictResponse
+from app.state_access import field, winner_id
 from app.artifacts.errors import ArtifactEligibilityError, ArtifactParityError
 from app.artifacts.publisher import (
     DOWNLOADABLE_FILES,
@@ -238,14 +239,14 @@ def get_run_result(
     return RunResultResponse(
         run_id=run_id,
         status=record.status,
-        validation=final_state.validation,
-        comparison=final_state.comparison,
-        baseline=final_state.baseline,
-        failure=final_state.failure,
-        reproducibility=final_state.reproducibility,
-        model_results=final_state.model_results,
-        evaluation_results=final_state.evaluation_results,
-        error=final_state.error,
+        validation=field(final_state, "validation"),
+        comparison=field(final_state, "comparison"),
+        baseline=field(final_state, "baseline"),
+        failure=field(final_state, "failure"),
+        reproducibility=field(final_state, "reproducibility"),
+        model_results=field(final_state, "model_results", default=[]) or [],
+        evaluation_results=field(final_state, "evaluation_results", default=[]) or [],
+        error=field(final_state, "error"),
     )
 
 
@@ -382,8 +383,9 @@ def get_run_why_explanation(
     if column:
         evidence["column"] = column
 
-    if record.final_state and hasattr(record.final_state, "comparison") and record.final_state.comparison:
-        evidence["winner_id"] = record.final_state.comparison.recommended_model_id
+    winner = winner_id(record.final_state) if record.final_state else None
+    if winner:
+        evidence["winner_id"] = winner
 
     return build_why_explanation(action, evidence=evidence, level=level)
 
@@ -420,7 +422,8 @@ def create_exploration(
             detail=f"Run '{run_id}' is still '{record.status}' — nothing trained to explore yet.",
         )
 
-    run_model_ids = [m.model_id for m in record.final_state.model_results]
+    model_results = field(record.final_state, "model_results", default=[]) or []
+    run_model_ids = [field(m, "model_id") for m in model_results if field(m, "model_id")]
 
     result = explore_alternative(
         run_id, run_model_ids, body.base_model_id, split_store, model_store,
@@ -797,6 +800,8 @@ def download_run_artifact_file(
         media = "application/json"
     elif filename.endswith(".py"):
         media = "text/x-python"
+    elif filename.endswith(".txt"):
+        media = "text/plain"
     return FileResponse(path, media_type=media, filename=filename)
 
 

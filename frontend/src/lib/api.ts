@@ -30,7 +30,9 @@ import type {
   FormulaEntry,
   ComprehensionCheck,
   ConceptDefinition,
+  CreateExplorationRequest,
   ExplorationResult,
+  ApiValidationErrorItem,
 } from './types'
 
 /**
@@ -51,17 +53,93 @@ export class ApiError extends Error {
   }
 }
 
+function formatValidationDetail(detail: ApiValidationErrorItem[]): string | null {
+  const first = detail[0]
+  if (!first?.msg) return null
+
+  const field = Array.isArray(first.loc) ? first.loc.filter((part) => part !== 'body').join('.') : ''
+  if (field.includes('hyperparameter_value')) {
+    return 'Please enter a valid value for this hyperparameter.'
+  }
+  if (first.msg.includes('valid dictionary or object')) {
+    return 'The request payload was malformed. Please try again.'
+  }
+  return first.msg
+}
+
+function extractErrorMessage(body: ApiErrorBody, statusText: string): string {
+  if (typeof body?.detail === 'string') {
+    return body.detail
+  }
+  if (Array.isArray(body?.detail)) {
+    return formatValidationDetail(body.detail) ?? statusText
+  }
+  if (body?.detail && typeof body.detail === 'object') {
+    return body.detail.message ?? body.detail.code ?? JSON.stringify(body.detail)
+  }
+  return statusText
+}
+
+interface BackendExplorationResult {
+  experiment_id: string
+  run_id: string
+  base_model_id: string
+  variable_changed: {
+    kind: 'model' | 'hyperparameter'
+    name: string
+    old_value: string
+    new_value: string
+  }
+  training: ExplorationResult['new_model']
+  evaluation: ExplorationResult['evaluation']
+  comparison_vs_base: {
+    models: Array<{ model_id: string; f1: number }>
+    recommended_model_id: string
+    justification: string
+  }
+  evaluation_explanation?: ExplorationResult['evaluation_explanation']
+}
+
+function mapExplorationResult(raw: BackendExplorationResult): ExplorationResult {
+  const newModelId = raw.training.model_id
+  const baseEntry = raw.comparison_vs_base.models.find((model) => model.model_id === raw.base_model_id)
+  const newEntry = raw.comparison_vs_base.models.find((model) => model.model_id === newModelId)
+  const baseMetric = baseEntry?.f1 ?? 0
+  const newMetric = newEntry?.f1 ?? 0
+
+  return {
+    experiment_id: raw.experiment_id,
+    run_id: raw.run_id,
+    base_model_id: raw.base_model_id,
+    variable: {
+      kind: raw.variable_changed.kind === 'model' ? 'algorithm' : 'hyperparameter',
+      name: raw.variable_changed.name,
+      base_value: raw.variable_changed.old_value,
+      new_value: raw.variable_changed.new_value,
+    },
+    new_model: raw.training,
+    evaluation: raw.evaluation,
+    comparison: {
+      base_model_id: raw.base_model_id,
+      new_model_id: newModelId,
+      primary_metric: 'f1',
+      base_metric_value: baseMetric,
+      new_metric_value: newMetric,
+      delta: newMetric - baseMetric,
+      winner_id: raw.comparison_vs_base.recommended_model_id,
+      justification: raw.comparison_vs_base.justification,
+    },
+    evaluation_explanation: raw.evaluation_explanation,
+  }
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, init)
   if (!response.ok) {
     let detail = response.statusText
     try {
       const body = (await response.json()) as ApiErrorBody
-      if (typeof body?.detail === 'string') {
-        detail = body.detail
-      } else if (body?.detail && typeof body.detail === 'object') {
-        detail = body.detail.message ?? body.detail.code ?? JSON.stringify(body.detail)
-      }
+      detail = extractErrorMessage(body, response.statusText)
     } catch {
       // response body wasn't JSON — fall back to statusText
     }
@@ -297,19 +375,22 @@ export function getConcepts(): Promise<ConceptDefinition[]> {
   return request<ConceptDefinition[]>('/learn/concepts')
 }
 
-export function createExploration(
+export async function createExploration(
   runId: string,
-  params: {
-    base_model_id: string
-    new_algorithm?: string
-    hyperparameter_name?: string
-    hyperparameter_value?: unknown
-  },
+  params: CreateExplorationRequest,
 ): Promise<ExplorationResult> {
-  return request<ExplorationResult>(`/runs/${encodeURIComponent(runId)}/explore`, {
-    method: 'POST',
-    body: JSON.stringify(params),
-  })
+  const raw = await request<BackendExplorationResult | ExplorationResult>(
+    `/runs/${encodeURIComponent(runId)}/explore`,
+    {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params),
+    },
+  )
+  if ('variable_changed' in raw) {
+    return mapExplorationResult(raw)
+  }
+  return raw
 }
 
 export function getExplorations(runId: string): Promise<ExplorationResult[]> {

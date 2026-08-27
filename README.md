@@ -1,10 +1,8 @@
-# PIPER — A Deterministic ML Compiler Powered by Local LLMs
+# PIPER — A Deterministic ML Compiler Powered by LLM Planners
 
-> Upload a tabular dataset. Describe the prediction target. PIPER plans, executes, validates, and delivers a verified ML pipeline — deterministically, locally, without cloud APIs.
+> Upload a tabular dataset. Describe the prediction target. PIPER plans, executes, validates, and delivers a verified ML pipeline — deterministically, reliably, with strict execution guardrails.
 
-PIPER is an autonomous ML pipeline engine that combines a local LLM planner with a fully deterministic execution, validation, and artifact layer. The LLM **proposes** a plan; rigid Python rules **validate, execute, and decide** — the planner can never bypass guards, pick models, or generate governance reports.
-
-**Architected for local execution on 16GB-class hardware with Ollama.**
+PIPER is an autonomous ML pipeline engine that combines an LLM planner (supporting Google Gemini, OpenAI, or local Ollama) with a fully deterministic execution, validation, and artifact layer. The LLM **proposes** a plan; rigid Python rules **validate, execute, and decide** — the planner can never bypass guards, pick models, or generate governance reports.
 
 ---
 
@@ -14,7 +12,7 @@ PIPER is an autonomous ML pipeline engine that combines a local LLM planner with
 flowchart TD
     User([User]) -->|upload dataset + target| Ingest[Multi-format Ingestion]
     Ingest --> Sanitize[Prompt Sanitization]
-    Sanitize --> LLM([Local LLM via Ollama\npropose only])
+    Sanitize --> LLM([LLM Planner: Gemini / OpenAI / Ollama\npropose only])
     LLM --> Validate{validate_proposed_plan\n5-tool allowlist}
     Validate -->|rejected| Fail1[Structured Failure\nno execution]
     Validate -->|valid| Execute[Deterministic Execution\nclean · engineer · split]
@@ -24,9 +22,9 @@ flowchart TD
     Guards -->|fail + exhausted| HI[Human Intervention Package]
     Guards -->|pass| Report[Run Report]
     Report --> Artifact[Verified Artifact Bundle\nnp.array_equal parity gate]
-    Artifact --> Inference[Standalone Inference\nno LLM · no retrain]
+    Artifact --> Inference[Standalone Inference / Test Flight\nno LLM · no retrain]
     Report --> Governance[Governance: Model + Data Cards]
-    Report --> StudentMode[Student Mode\ndeterministic explanations · What-If]
+    Report --> StudentMode[Student Mode\n14-stage journey · What-If sandbox]
 ```
 
 ---
@@ -35,22 +33,23 @@ flowchart TD
 
 | Phase | What happens |
 |---|---|
-| **Ingestion** | CSV, TSV, Excel, JSON, Parquet, Jupyter Notebook — detected automatically |
-| **Profiling** | Column types, missingness, cardinality, class distribution |
+| **Ingestion** | CSV, TSV, Excel, JSON, Parquet, Jupyter Notebook — detected and profiled automatically |
+| **Profiling** | Column types, null missingness, cardinality, class distribution |
 | **Sanitization** | Sample values scanned for prompt-injection patterns before reaching the LLM |
-| **Planning** | Local LLM proposes a cleaning + feature engineering plan |
-| **Validation** | `validate_proposed_plan()` enforces a fixed 5-tool allowlist — anything else is rejected before execution |
-| **Execution** | Drop columns, impute, convert types, encode categoricals, scale numerics |
-| **Training** | Logistic Regression and Random Forest — fit as one sklearn `Pipeline` on the training split only |
-| **Evaluation** | F1, precision, recall, ROC-AUC; F1-max model selection (fixed in code, not LLM-choosable) |
-| **Guardrails** | Leakage, class imbalance, constant features, high cardinality, suspicious metrics, baseline gate |
-| **REPLAN** | On guardrail failure: structured replan prompt with previous failure evidence and plan diff |
-| **Duplicate Detection** | Plan hashes catch identical retry proposals as `DUPLICATE_PLAN` |
-| **Artifacts** | `pipeline.joblib`, `pipeline.py`, reproduction notebook, SHA-256 hashes, `evidence.json` — only after `np.array_equal` parity passes |
-| **Governance** | Deterministic model cards, dataset cards, subgroup fairness analysis |
-| **Deployment** | Standalone `/predict` endpoint; CSV Test Flight scoring against verified artifact |
-| **Student Mode** | 14-stage learning journey, pipeline flowchart, "Why did PIPER do this?", metric explainers |
-| **What-If** | Controlled single-variable experiments on existing runs (isolated IDs, original run untouched) |
+| **Multi-Provider Planning** | Flexible planner support for **Google Gemini**, **OpenAI**, or **Ollama**, with configurable model selection |
+| **Deterministic Validation** | `validate_proposed_plan()` enforces a rigid 5-tool allowlist — anything else is rejected before execution |
+| **Plan Adequacy** | Pre-execution verification that the plan addresses all required dataset cleaning needs |
+| **Execution** | Drop columns, impute nulls, convert types, one-hot encode categoricals, scale numerics |
+| **Training** | Logistic Regression and Random Forest — fitted as a standard scikit-learn `Pipeline` on the training split only |
+| **Evaluation & Selection** | Accuracy, Precision, Recall, F1, ROC-AUC; deterministic F1-score model selection (fixed in code) |
+| **Safety Guardrails** | Data leakage, class imbalance, constant features, high cardinality, suspicious metrics, baseline gate |
+| **Autonomous REPLAN** | On guardrail/adequacy failure: targeted replan prompt with previous failure evidence and plan diff |
+| **Duplicate Detection** | Plan hashes detect identical retry proposals as `DUPLICATE_PLAN` |
+| **Artifact Generation** | `pipeline.joblib`, `pipeline.py`, `training_reproduction.ipynb`, `manifest.json`, `evidence.json`, `requirements.txt`, `hashes.json` — verified via `np.array_equal` parity gate |
+| **Governance Evidence** | Deterministic Model Cards, Dataset Cards, Cryptographic Fingerprints, Feature Importance |
+| **Test Flight** | Standalone inference interface scoring unseen batch CSV / JSON records against verified artifacts without retraining |
+| **Controlled What-If** | Single-variable experiments in an isolated sandbox (`exp_...`) with client/server validation, preserving base run |
+| **Student Mode** | 14-stage guided learning journey, interactive pipeline flowchart, level-aware "Why did PIPER do this?" explanation |
 
 ---
 
@@ -60,7 +59,8 @@ flowchart TD
 2. **No automatic plan repair.** Invalid plans are rejected wholesale, not partially patched.
 3. **Explanations are never LLM-generated.** Every explanation is a deterministic template filled with recorded run values.
 4. **Artifact parity is exact.** `np.array_equal` — not `np.allclose`. Approximate agreement is rejected.
-5. **Inference never retrains.** The standalone predict endpoint loads the verified `pipeline.joblib` only.
+5. **Inference never retrains.** The standalone predict endpoint and Test Flight load the verified `pipeline.joblib` only.
+6. **What-If experiments are fully isolated.** Running a What-If experiment creates an isolated `exp_` record and never mutates the base run or base verified artifact.
 
 ---
 
@@ -68,12 +68,13 @@ flowchart TD
 
 - **Python 3.11+**
 - **Node.js 20+** with npm
-- **[Ollama](https://ollama.com)** running locally with a model pulled:
-  ```bash
-  ollama pull qwen3:4b
-  ```
-
-Ollama always runs **outside** Docker/PIPER — PIPER connects to it via HTTP.
+- **LLM Provider** (any of the following):
+  - **Google Gemini API Key** (`GEMINI_API_KEY`; model configurable via `GEMINI_MODEL`)
+  - **OpenAI API Key** (`OPENAI_API_KEY`)
+  - **Ollama** running locally:
+    ```bash
+    ollama pull qwen3:4b
+    ```
 
 ---
 
@@ -261,20 +262,20 @@ When planning fails, PIPER safely intercepts via deterministic REPLAN, duplicate
 
 ---
 
-## Tests
+## Tests & Verification
 
 ```bash
-# Backend (1003 passing, 5 skipped — Ollama integration, gated behind env var)
+# Backend test suite (272 passing unit/integration tests)
 cd backend && pytest tests/ -q
 
-# Frontend (39 passing)
+# Frontend test suite (51 passing unit/component/integration tests)
 cd frontend && npm test -- --run
 
 # Frontend production build
 cd frontend && npm run build
 
-# Ollama integration tests (requires live Ollama + model)
-PIPER_RUN_OLLAMA_TESTS=1 pytest backend/tests/test_ollama_integration.py -q
+# End-to-end Live Gemini Titanic verification
+cd backend && python verify_titanic_demo.py
 ```
 
 ---

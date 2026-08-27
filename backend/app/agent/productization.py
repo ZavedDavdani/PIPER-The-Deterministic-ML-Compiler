@@ -15,6 +15,7 @@ from app.agent.plan_canonical import canonicalize_plan
 from app.agent.plan_diff import PlanDiff, diff_plans
 from app.agent.run_summary import build_run_summary
 from app.agent.timeline import build_execution_timeline
+from app.state_access import field
 from app.schemas.adequacy import AdequacyFinding
 from app.schemas.productization import (
     DecisionStage,
@@ -298,9 +299,9 @@ def build_decision_trace(
     else:
         stages.append(_stage("EVALUATION", "Evaluation", "not_reached", "Evaluation did not run."))
 
-    validation = getattr(state, "validation", None) if state is not None else None
+    validation = field(state, "validation") if state is not None else None
     if validation is not None:
-        ok = bool(getattr(validation, "valid", False))
+        ok = field(validation, "valid") is True
         stages.append(_stage(
             "GUARDRAILS", "Guardrails", "passed" if ok else "failed",
             "Deterministic guardrails passed." if ok else "Deterministic guardrails failed.",
@@ -332,12 +333,12 @@ def build_verdict(run_id: str, run_status: str, state: Any) -> PiperVerdict:
     attempts = _attempts_from_state(state)
     last = attempts[-1] if attempts else None
     failure = getattr(state, "failure", None)
-    validation = getattr(state, "validation", None)
-    retry_count = int(getattr(state, "retry_count", 0) or 0)
-    max_retries = int(getattr(state, "max_retries", 2) or 2)
+    validation = field(state, "validation")
+    retry_count = int(field(state, "retry_count", default=0) or 0)
+    max_retries = int(field(state, "max_retries", default=2) or 2)
     human = False
     if failure is not None:
-        human = bool(getattr(failure, "human_intervention_required", False))
+        human = bool(field(failure, "human_intervention_required", default=False))
     executed = _executed(state)
     structurally_valid = bool(last.structurally_valid) if last is not None else False
     if last is None or last.adequacy_status is None:
@@ -347,7 +348,7 @@ def build_verdict(run_id: str, run_status: str, state: Any) -> PiperVerdict:
     if validation is None:
         guardrails_passed: Optional[bool] = None
     else:
-        guardrails_passed = bool(validation.valid)
+        guardrails_passed = field(validation, "valid") is True
 
     category = getattr(failure, "category", None) if failure is not None else None
 
