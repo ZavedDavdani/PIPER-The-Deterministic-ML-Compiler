@@ -63,9 +63,7 @@ Verifies bitwise reproducible execution with environment fingerprints, fixed see
 ## 5. Artifacts & Deployment
 
 ### Verified ML Artifact Bundle
-Cryptographically verified bundle (\pipeline.joblib\, \pipeline.py\, \	raining_reproduction.ipynb\, \manifest.json\, \evidence.json\, \
-equirements.txt\, \hashes.json\) passing strict \
-p.array_equal\ parity gates.
+Cryptographically verified bundle (`pipeline.joblib`, `pipeline.py`, `training_reproduction.ipynb`, `manifest.json`, `evidence.json`, `requirements.txt`, `hashes.json`) passing strict `np.array_equal` parity gates.
 
 ![Verified ML Artifacts](screenshots/verified-artifacts.png)
 

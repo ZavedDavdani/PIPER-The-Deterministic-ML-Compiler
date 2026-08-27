@@ -289,7 +289,7 @@ When planning fails, PIPER safely intercepts via deterministic REPLAN, duplicate
 ## Tests & Verification
 
 ```bash
-# Backend test suite (272 passing unit/integration tests)
+# Backend test suite (1,072 unit, integration, and guardrail tests)
 cd backend && pytest tests/ -q
 
 # Frontend test suite (51 passing unit/component/integration tests)
@@ -315,11 +315,11 @@ PIPER/
 │   │   ├── deployment/     # Standalone inference, Test Flight, readiness
 │   │   ├── governance/     # Model cards, data cards, fairness analysis
 │   │   ├── learning/       # Student Mode: explanations, concept registry
-│   │   ├── llm/            # OllamaProvider protocol + client
+│   │   ├── llm/            # Multi-provider LLM clients (Gemini, OpenAI, Ollama)
 │   │   ├── schemas/        # Pydantic contracts (every structured type)
 │   │   ├── storage/        # SQLite run store, in-memory stores
 │   │   └── api/            # FastAPI routers
-│   ├── tests/              # 1003-test behavioral suite
+│   ├── tests/              # Full unit, integration, and behavioral test suite (1,072 tests)
 │   ├── Dockerfile          # Backend container image definition
 │   ├── Dockerfile.dockerignore
 │   └── pytest.ini
