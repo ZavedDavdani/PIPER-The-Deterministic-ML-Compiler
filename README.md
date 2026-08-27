@@ -70,6 +70,21 @@ flowchart TD
 ### 5. Decision Trace + Planning & Execution
 ![Decision Trace + Planning & Execution](docs/screenshots/decision-trace.png)
 
+### 6. Baseline Gate
+![Baseline Gate](docs/screenshots/baseline-gate.png)
+
+### 7. Deterministic Guardrails
+![Deterministic Guardrails](docs/screenshots/guardrails.png)
+
+### 8. Reproducibility
+![Reproducibility](docs/screenshots/reproducibility.png)
+
+### 9. Verified Artifacts
+![Verified Artifacts](docs/screenshots/verified-artifacts.png)
+
+### 10. Test Flight / Inference
+![Test Flight / Inference](docs/screenshots/test-flight.png)
+
 ---
 
 ## Design Constraints (Non-Negotiable)
