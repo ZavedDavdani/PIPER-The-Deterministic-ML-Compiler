@@ -55,11 +55,11 @@ flowchart TD
 
 ## Screenshots
 
-### 1. Dataset Upload / Configuration Dashboard
-![Dataset Upload / Configuration Dashboard](docs/screenshots/dataset-upload.png)
+### 1. Dataset Upload / Configuration
+![Dataset Upload / Configuration](docs/screenshots/dataset-upload.png)
 
-### 2. Student Mode — 14-Stage ML Learning Journey
-![Student Mode — 14-Stage ML Learning Journey](docs/screenshots/student-mode.png)
+### 2. Student Mode — ML Learning Journey
+![Student Mode — ML Learning Journey](docs/screenshots/student-mode.png)
 
 ### 3. End-to-End Pipeline Visualization
 ![End-to-End Pipeline Visualization](docs/screenshots/pipeline-visualization.png)
@@ -67,8 +67,8 @@ flowchart TD
 ### 4. Model Comparison
 ![Model Comparison](docs/screenshots/model-comparison.png)
 
-### 5. Decision Trace + Planning & Execution
-![Decision Trace + Planning & Execution](docs/screenshots/decision-trace.png)
+### 5. Decision Trace / Planning & Execution
+![Decision Trace / Planning & Execution](docs/screenshots/decision-trace.png)
 
 ### 6. Baseline Gate
 ![Baseline Gate](docs/screenshots/baseline-gate.png)
